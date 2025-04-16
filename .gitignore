@@ -1,0 +1,16 @@
+# Ignore virtual environments
+/*-env
+
+# Ignore Credential files
+.env
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# Ignore Python cache files
+__pycache__/
+
+# Ignore dataset
+**/data/
+
+journal.md
