@@ -6,6 +6,9 @@ import os
 import uuid
 import pandas as pd
 from datetime import datetime
+from utilities.logger_config import get_module_logger
+
+logger = get_module_logger(__name__)
 
 class ADE:
     # Patient information
