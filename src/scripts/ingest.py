@@ -1,12 +1,17 @@
+import sys
 import os
+
+import requests
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import shlex
 import subprocess
 from scripts.ade import ADE
-from utilities.helper import part_size_mb, partition_id_by_year, read_json_file, upload_to_gcs
+from utilities.helper import part_size_mb, partition_id_by_year, read_json_file
 from utilities.logger_config import get_module_logger
 from google.cloud import storage
-
 from dotenv import load_dotenv
+
 load_dotenv()
 
 logger = get_module_logger(__name__)
@@ -118,6 +123,7 @@ def upload_to_gcs(local_base_dir, bucket_name, gcs_prefix):
                 logger.info(f"Uploaded {local_file_path} to gs://{bucket_name}/{gcs_blob_path}")
 
 def process_batch(batch):
+    logger.info("Initiating Batch Processing")
 
     # Directories of temporary files and folder
     RAW_DIR = "./raw"
@@ -187,8 +193,7 @@ def process_batch(batch):
             # Purge tmp folder to prepare for next partition
             for dir_path in tmp_dirs:
                 wildcard_path = os.path.join(dir_path, "*")
-                quoted_path = shlex.quote(wildcard_path)
-                subprocess.run(f"rm -rf {quoted_path}", shell=True, check=True)
+                subprocess.run(f"rm -rf {wildcard_path}", shell=True, check=True)
             logger.info("Purged tmp directories")
 
         logger.info('===================================================================')
@@ -203,3 +208,20 @@ def process_batch(batch):
 
 if __name__ == '__main__':
     print("Executing ingest.py")
+    URL = "https://api.fda.gov/download.json"
+    MAX_BATCH_SIZE_MB = 13000
+
+    res = requests.get(URL)
+    logger.info(f"Fetching data: {URL}")
+
+    logger.info("Remapping JSON object")
+    data = res.json()
+    downloads_json = extract_drug_events(data)
+
+    logger.info(f"Creating Batches [max_batch_size={MAX_BATCH_SIZE_MB}]")
+    batch, _ = create_batch(
+        downloads_json.get('partitions'),
+        max_batch_size_mb=MAX_BATCH_SIZE_MB
+        )
+    
+    process_batch(batch)

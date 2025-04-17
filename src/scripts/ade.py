@@ -120,7 +120,9 @@ class ADE:
         for p in ["patient", "drug", "reaction"]:
             path = os.path.join("pq", p, dir)
             dirs.append(path)
-            os.makedirs(path, exist_ok=True)
+            if not os.path.exists(path):
+                logger.info(f"Directory '{path}' missing. Created '{path}'")
+                os.makedirs(path, exist_ok=True)
         
         for d,p in zip(df, dirs):
             saved_path = os.path.join(p,f"{fname}.parquet")
