@@ -18,7 +18,7 @@ def get_logger(name=__name__):
     logger = logging.getLogger(name)
     logger.setLevel(logging.INFO)
 
-    formatter = logging.Formatter('[%(asctime)s] %(lineno)d %(name)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter('[%(asctime)s] %(name)s:%(lineno)d - %(levelname)s - %(message)s')
 
     # Logs into file
     file_handler = logging.FileHandler(log_file)
