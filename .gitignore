@@ -3,7 +3,7 @@
 
 # Ignore Credential files
 .env
-**/keys
+**/keys/*
 
 # Ignore Jupyter Notebook checkpoints
 .ipynb_checkpoints

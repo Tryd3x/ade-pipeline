@@ -1,11 +1,7 @@
-"""
-This class is to map JSON objects to either a csv or parquet file
-Preferrably used to streamline streaming data
-"""
+"""Adverse Drug Event"""
 import os
 import uuid
 import pandas as pd
-from datetime import datetime
 from utilities.logger_config import get_module_logger
 
 logger = get_module_logger(__name__)
@@ -115,32 +111,18 @@ class ADE:
 
         return df_patients, df_drugs, df_reactions
 
-    def save_as_parquet(self, output_path):
-        save_path = os.path.join(output_path,"pq")
-        current_time = datetime.now().strftime("%m-%d-%Y_%H%M%S")
+    def save_as_parquet(self, fname, dir):
         df_patients, df_drugs, df_reactions = self._to_dataframe()
+        df = [df_patients, df_drugs, df_reactions]
+
+        dirs = []
 
         for p in ["patient", "drug", "reaction"]:
-            path = os.path.join(save_path,p)
-            if not os.path.exists(path):
-                os.makedirs(path, exist_ok=True)
-
-        df_patients.to_parquet(os.path.join(save_path,"patient",f"patient_{current_time}.parquet"))
-        df_drugs.to_parquet(os.path.join(save_path,"drug",f"drug_{current_time}.parquet"))
-        df_reactions.to_parquet(os.path.join(save_path,"reaction",f"reaction_{current_time}.parquet"))
-
-    def save_as_csv(self, output_path):
-        save_path = os.path.join(output_path,"csv")
-        current_time = datetime.now().strftime("%m-%d-%Y_%H%M%S")
-        df_patients, df_drugs, df_reactions = self._to_dataframe()
-
-        for p in ["patient", "drug", "reaction"]:
-            path = os.path.join(save_path,p)
-            if not os.path.exists(path):
-                os.makedirs(path, exist_ok=True)
-
-        df_patients.to_csv(os.path.join(save_path,"patient",f"patient_{current_time}.csv"), index=False)
-        df_drugs.to_csv(os.path.join(save_path,"drug",f"drug_{current_time}.csv"), index=False)
-        df_reactions.to_csv(os.path.join(save_path,"reaction",f"reaction_{current_time}.csv"), index=False)
-
-
+            path = os.path.join("pq", p, dir)
+            dirs.append(path)
+            os.makedirs(path, exist_ok=True)
+        
+        for d,p in zip(df, dirs):
+            saved_path = os.path.join(p,f"{fname}.parquet")
+            d.to_parquet(saved_path)
+            logger.info(f"Parquet File saved to: {saved_path}")

@@ -1,18 +1,6 @@
 import logging
 from datetime import datetime
 
-# def project_root():
-#     current_dir = os.getcwd()
-#     while current_dir != os.path.dirname(current_dir):
-#         # Check for marker in current_dir
-#         if '.git' in os.listdir(current_dir) or '.gitignore' in os.listdir(current_dir):
-#             return current_dir
-        
-#         # /home/folder -> /home
-#         current_dir = os.path.dirname(current_dir) # Fetch directory component of path
-
-# logger_config.py
-
 def configure_logging():
     # Configure the root logger
     root_logger = logging.getLogger()
@@ -27,7 +15,7 @@ def configure_logging():
     
     # Create a time-based log file name
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    log_filename = f"application_{timestamp}.log"
+    log_filename = f"ingest_{timestamp}.log"
 
     # Create a file handler for file output
     file_handler = logging.FileHandler(log_filename)
