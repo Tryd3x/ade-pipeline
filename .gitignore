@@ -13,4 +13,8 @@ __pycache__/
 # Ignore dataset
 **/data/
 
+# Ignore temp folders
+logs
+**/tmp
+
 journal.md
