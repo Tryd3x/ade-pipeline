@@ -3,16 +3,17 @@
 
 # Ignore Credential files
 .env
-**/keys/*
+keys
 
 # Ignore Jupyter Notebook checkpoints
 .ipynb_checkpoints
 
 # Ignore Python cache files
-__pycache__/
+__pycache__
+.pytest_cache
 
 # Ignore dataset
-**/data/
+/data
 
 # Ignore temp folders
 logs

@@ -172,10 +172,8 @@ def process_batch(batch):
                     ade.extractJSON(temp_json)
                     logger.info(f"Parsed json file to ADE object: {dl_filepath}")
 
-
                     # Save ADE object as parquet file
                     ade.save_as_parquet(fname=dl_filename, dir=p.get('partition_id'))
-
 
                     # Increment part number
                     file_count+=1
@@ -192,9 +190,14 @@ def process_batch(batch):
 
             # Purge tmp folder to prepare for next partition
             for dir_path in tmp_dirs:
+                logger.info(f"Purging files in'{dir_path}'")
                 wildcard_path = os.path.join(dir_path, "*")
-                subprocess.run(f"rm -rf {wildcard_path}", shell=True, check=True)
-            logger.info("Purged tmp directories")
+                popen = subprocess.Popen(f"rm -rfv {wildcard_path}", stdout=subprocess.PIPE, shell=True, text=True)
+
+                for o in popen.stdout:
+                    logger.info(o.strip())
+            
+            logger.info("Purge completed")
 
         logger.info('===================================================================')
         logger.info(f'============================= Batch {i} END =========================')
