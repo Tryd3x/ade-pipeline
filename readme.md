@@ -21,3 +21,7 @@ The final output helps stakeholders answer critical questions about drug-related
 - Which age sub-groups (e.g., 65–70, 71–80, 81+) are most at risk?
 - What drug combinations are disproportionately represented in adverse event reports?
 
+Run tests:
+```
+pytest -v src
+```

@@ -168,7 +168,7 @@ def process_batch(batch):
 
                     # Load JSON and map to class ADE
                     ade = ADE()
-                    temp_json = read_json_file(dl_filepath)['results']
+                    temp_json = read_json_file(dl_filepath)
                     ade.extractJSON(temp_json)
                     logger.info(f"Parsed json file to ADE object: {dl_filepath}")
 

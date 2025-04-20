@@ -55,7 +55,8 @@ class ADE:
         self.drugs_list = []
         self.reactions_list = []
     
-    def extractJSON(self, data):
+    def extractJSON(self, json):
+        data = json.get('results')
         for item in data:
             patientid = str(uuid.uuid4())
             patient = item.get("patient",{})

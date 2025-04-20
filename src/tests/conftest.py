@@ -14,7 +14,7 @@ def clean_test_suite():
     pass
 
 @pytest.fixture
-def get_openfda_api_data():
+def download_json():
     """Simulate a real HTTP request to openFDA API to fetch download.json. Used for Integration testing."""
     url = "https://api.fda.gov/download.json"
     response = requests.get(url)

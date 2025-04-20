@@ -1,1 +1,3 @@
-""" Mock, sample data, static data, data generators, etc"""
+""" Helper functions to write clean test code"""
+
+# Assert functions
