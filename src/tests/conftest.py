@@ -2,6 +2,8 @@
 import pytest
 import requests
 
+from utilities.helper import read_json_file
+
 @pytest.fixture
 def setup_test_suite():
     print("Setup phase")
@@ -22,3 +24,7 @@ def download_json():
         return response.json()
     else:
         pytest.fail(f"Failed to fetch data: {response.status_code}")
+
+@pytest.fixture
+def load_mock_json():
+    return read_json_file('src/tests/mocks/data/drug-event-0001-of-0005.json')

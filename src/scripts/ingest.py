@@ -18,15 +18,20 @@ logger = get_module_logger(__name__)
 
 def extract_drug_events(json):
     """Restructures JSON object to handle batch processing better"""
+    if not json or 'results' not in json:
+        raise ValueError("Invalid input: Missing 'results' key.")
 
     events = json.get('results',{}).get('drug',{}).get('event',{})
     total_records = events.get('total_records')
-    partitions = events.get('partitions')
+    partitions = events.get('partitions',[])
 
-    # Generate unique partition_id and count set
+    # Generate unique partition_id and its count
     partition_ids = {}
     for p in partitions:
+        # Extract year as partition_id
         id = partition_id_by_year(p)
+
+        # Number of occurences
         partition_ids[id] = partition_ids.get(id,0) + 1
     
     # Groups partition by partitionid
@@ -83,7 +88,6 @@ def create_batch(partitions, max_batch_size_mb=10000):
             batch.append(batch_partitions.copy())
             batch_partitions.clear()
             sum_size = 0
-            continue
         
         batch_partitions.append(p)
         sum_size += size
