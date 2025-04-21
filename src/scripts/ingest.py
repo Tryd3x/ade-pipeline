@@ -1,8 +1,9 @@
 import os
-from time import sleep
-import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+# Uncomment in local dev environment
+# import sys
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+from time import sleep
 import requests
 import shlex
 import subprocess
