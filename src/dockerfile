@@ -1,0 +1,21 @@
+FROM python:3.10
+
+RUN apt-get update && apt-get install -y wget
+
+WORKDIR /app
+
+COPY ./requirements.txt .
+
+RUN python -m venv venv \
+    && venv/bin/pip install --upgrade pip \
+    && venv/bin/pip install -r requirements.txt
+
+COPY ./scripts ./scripts
+COPY ./utilities ./utilities
+
+ENV PATH="/app/venv/bin:$PATH"
+ENV PYTHONPATH="/app"
+
+WORKDIR /app/scripts
+
+ENTRYPOINT ["python" ,"ingest.py"]

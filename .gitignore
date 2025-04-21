@@ -1,5 +1,6 @@
 # Ignore virtual environments
 /*-env
+/venv
 
 # Ignore Credential files
 .env
@@ -20,3 +21,30 @@ logs
 **/tmp
 
 journal.md
+
+# Ignore Terraform state files
+*.tfstate
+*.tfstate.*
+
+# Ignore crash logs
+crash.log
+
+# Ignore variable override files
+*.tfvars
+*.tfvars.json
+
+# Ignore sensitive .auto.tfvars files
+*.auto.tfvars
+*.auto.tfvars.json
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+
+# Ignore Terraform working directory
+.terraform/
+
+# Ignore plan output
+*.tfplan
+
+.terraform.lock.hcl

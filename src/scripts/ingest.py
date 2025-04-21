@@ -1,18 +1,19 @@
-import sys
 import os
-
-import requests
+from time import sleep
+import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+import requests
 import shlex
 import subprocess
 from scripts.ade import ADE
-from utilities.helper import part_size_mb, partition_id_by_year, read_json_file
-from utilities.logger_config import get_module_logger
 from google.cloud import storage
 from dotenv import load_dotenv
-
 load_dotenv()
+
+from utilities.helper import part_size_mb, partition_id_by_year, read_json_file
+from utilities.logger_config import get_module_logger
+
 
 logger = get_module_logger(__name__)
 
@@ -108,8 +109,6 @@ def upload_to_gcs(local_base_dir, bucket_name, gcs_prefix):
     if not creds_path:
         raise EnvironmentError("GOOGLE_APPLICATION_CREDENTIALS not set in .env or environment.")
 
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = creds_path
-
     client = storage.Client()
     bucket = client.bucket(bucket_name)
 
@@ -189,7 +188,7 @@ def process_batch(batch):
                     logger.error(f"Unexpected error occured: {e}")
 
             # Upload parquet file to GCS bucket
-            upload_to_gcs(local_base_dir=PQ_DIR,bucket_name='ade-pipeline',gcs_prefix="data/pq")
+            upload_to_gcs(local_base_dir=PQ_DIR,bucket_name='zoomcamp-454219-ade-pipeline',gcs_prefix="data/pq")
             logger.info(f"Uploaded partition '{p.get('partition_id')}' parquet files to GCS.")
 
             # Purge tmp folder to prepare for next partition
@@ -232,3 +231,7 @@ if __name__ == '__main__':
         )
     
     process_batch(batch)
+
+
+    print("Currently in sleep mode...")
+    sleep(300)
