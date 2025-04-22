@@ -48,3 +48,6 @@ terraform.rc
 *.tfplan
 
 .terraform.lock.hcl
+
+# Miscellaneous
+module_test

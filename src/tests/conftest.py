@@ -2,7 +2,7 @@
 import pytest
 import requests
 
-from utilities.helper import read_json_file
+from utilities import read_json_file
 
 @pytest.fixture
 def setup_test_suite():
@@ -27,4 +27,4 @@ def download_json():
 
 @pytest.fixture
 def load_mock_json():
-    return read_json_file('src/tests/mocks/data/drug-event-0001-of-0005.json')
+    return read_json_file('./tests/mocks/data/drug-event-0001-of-0005.json')

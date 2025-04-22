@@ -1,20 +1,14 @@
 import os
-# Uncomment in local dev environment
-# import sys
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
-from time import sleep
-import requests
 import shlex
+import requests
 import subprocess
+from time import sleep
 from scripts.ade import ADE
 from google.cloud import storage
 from dotenv import load_dotenv
 load_dotenv()
 
-from utilities.helper import part_size_mb, partition_id_by_year, read_json_file
-from utilities.logger_config import get_module_logger
-
+from utilities import part_size_mb, partition_id_by_year, read_json_file, get_module_logger
 
 logger = get_module_logger(__name__)
 
@@ -234,5 +228,5 @@ if __name__ == '__main__':
     process_batch(batch)
 
 
-    print("Currently in sleep mode...")
+    print("Terminating in 5 mins...")
     sleep(300)

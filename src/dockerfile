@@ -16,6 +16,4 @@ COPY ./utilities ./utilities
 ENV PATH="/app/venv/bin:$PATH"
 ENV PYTHONPATH="/app"
 
-WORKDIR /app/scripts
-
-ENTRYPOINT ["python" ,"ingest.py"]
+ENTRYPOINT ["python" ,"scripts/ingest.py"]
