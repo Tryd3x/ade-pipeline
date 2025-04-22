@@ -1,6 +1,7 @@
 # Ignore virtual environments
 /*-env
 /venv
+*-venv
 
 # Ignore Credential files
 .env

@@ -1,6 +1,6 @@
 import pytest
 from tests.mocks.data_utilities import generate_mock_download_json
-from openfda.main import extract_drug_events
+from main import extract_drug_events
 
 def test_empty():
     mock_json = {}

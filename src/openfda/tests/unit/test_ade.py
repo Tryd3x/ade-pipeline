@@ -1,5 +1,5 @@
 import os
-from openfda.utilities.ade import ADE
+from utilities import ADE
 
 def test_extractJSON_valid(load_mock_json):
     ade = ADE()

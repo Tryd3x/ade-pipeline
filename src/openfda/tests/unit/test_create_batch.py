@@ -1,4 +1,4 @@
-from openfda.main import create_batch
+from main import create_batch
 from tests.mocks.data_utilities import create_drug_events_json
 
 def test_under_threshold():
