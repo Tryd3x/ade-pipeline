@@ -110,8 +110,6 @@ def upload_to_gcs(local_base_dir, bucket_name, gcs_prefix):
         for file in sorted(files):
             if file.endswith(".parquet"):
                 local_file_path = os.path.join(root, file)
-                
-                # Relative path from the local_base_dir
                 relative_path = os.path.relpath(local_file_path, local_base_dir)
                 gcs_blob_path = os.path.join(gcs_prefix, relative_path).replace("\\", "/")
                 blob = bucket.blob(gcs_blob_path)
@@ -122,44 +120,43 @@ def upload_to_gcs(local_base_dir, bucket_name, gcs_prefix):
 def process_batch(batch):
     logger.info("Initiating Batch Processing")
 
-    # Directories of temporary files and folder
-    RAW_DIR = "./raw"
-    PQ_DIR = "./pq"
+    # Create temp directories
+    TEMP_DIR = "./temp/"
+    RAW_DIR = os.path.join(TEMP_DIR,"raw")
+    PQ_DIR = os.path.join(TEMP_DIR,"pq")
     tmp_dirs = [RAW_DIR, PQ_DIR]
 
-    # Create temporary directories
     if not os.path.exists(RAW_DIR):
         logger.info("Directory 'raw' missing. Created 'raw'")
         os.makedirs(RAW_DIR,exist_ok=True)
 
-    # Insert batch iteration here
+    # Batch iteration
     for i, b in enumerate(batch):
         logger.info('===================================================================')
         logger.info(f'============================= BATCH {i+1} =============================')
         logger.info('===================================================================')
 
-        # Insert partition iteration here
+        # Partitioon iteration
         for j,p in enumerate(b):
             logger.info(f'----------------- Processing partition {j+1} -----------------')  
 
             files = p.get('files')
             total_count = p.get('count')
             file_count = 1
+
+            # URL iteration
             for f in files:
                 dl_filename = f"drug-event-part-{file_count}-of-{total_count}"
                 try:
-                    # Download and unzip
                     logger.info(f"Download started: {f}")
-
                     dl_filepath = os.path.join(RAW_DIR,f"{dl_filename}.json")  
-                    result = subprocess.run(
+                    subprocess.run(
                         f'wget -q -O - {shlex.quote(f)} | gunzip > {shlex.quote(dl_filepath)}',
                         shell=True,
                         check=True,
                         capture_output=True,
                         text=True
                     )
-
                     # Saved to tmp folder
                     logger.info(f"File saved to: {dl_filepath}")
 
@@ -170,9 +167,7 @@ def process_batch(batch):
                     logger.info(f"Parsed json file to ADE object: {dl_filepath}")
 
                     # Save ADE object as parquet file
-                    ade.save_as_parquet(fname=dl_filename, dir=p.get('partition_id'))
-
-                    # Increment part number
+                    ade.save_as_parquet(save_to=PQ_DIR,subfolder=p.get('partition_id'),fname=dl_filename)
                     file_count+=1
 
                 except subprocess.CalledProcessError as e:
@@ -200,10 +195,17 @@ def process_batch(batch):
         logger.info(f'============================= Batch {i} END =========================')
         logger.info('===================================================================')
     
-    # Summary of the batch script
-    # Total batch processed
-    # Size of each batch processed
-    # Etc
+    # Possible log additions:
+    # - Summary of the batch script
+    # - Total batch processed
+    # - Total Size of the batch processed
+
+    # Clear temp folder here
+    logger.info("Deleting temporary directories")
+    popen = subprocess.Popen(f"rm -rvf {TEMP_DIR}", stdout=subprocess.PIPE, shell=True,text=True)
+    for o in popen.stdout:
+        logger.info(o.strip())
+
     logger.info("Batch Processing Completed!")
 
 if __name__ == '__main__':
@@ -225,7 +227,6 @@ if __name__ == '__main__':
         )
     
     process_batch(batch)
-
-
+    
     print("Terminating in 5 mins...")
     sleep(300)

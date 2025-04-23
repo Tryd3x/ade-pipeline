@@ -46,11 +46,11 @@ def test_save_as_parquet(tmp_path,load_mock_json):
     original_cwd = os.getcwd()
     try:
         os.chdir(tmp_path)
-        ade.save_as_parquet(fname="testfile",dir='year')
+        ade.save_as_parquet(save_to=tmp_path,fname="testfile",subfolder='year')
         expected_files = [
-            tmp_path / "pq" / "patient" / "year" / "testfile.parquet",
-            tmp_path / "pq" / "drug" / "year" / "testfile.parquet",
-            tmp_path / "pq" / "reaction" / "year" / "testfile.parquet",
+            tmp_path / "patient" / "year" / "testfile.parquet",
+            tmp_path / "drug" / "year" / "testfile.parquet",
+            tmp_path / "reaction" / "year" / "testfile.parquet",
         ]
 
         for f in expected_files:

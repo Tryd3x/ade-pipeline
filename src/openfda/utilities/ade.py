@@ -112,14 +112,14 @@ class ADE:
 
         return df_patients, df_drugs, df_reactions
 
-    def save_as_parquet(self, fname, dir):
+    def save_as_parquet(self, save_to, fname, subfolder):
         df_patients, df_drugs, df_reactions = self._to_dataframe()
         df = [df_patients, df_drugs, df_reactions]
 
         dirs = []
 
         for p in ["patient", "drug", "reaction"]:
-            path = os.path.join("pq", p, dir)
+            path = os.path.join(save_to, p, subfolder)
             dirs.append(path)
             if not os.path.exists(path):
                 logger.info(f"Directory '{path}' missing. Created '{path}'")
