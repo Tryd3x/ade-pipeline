@@ -1,0 +1,11 @@
+services:
+  scheduler:
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    user: root
+  webserver:
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  triggerer:
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
