@@ -220,6 +220,9 @@ if __name__ == '__main__':
     data = res.json()
     downloads_json = extract_drug_events(data)
 
+    # Add params to filter by year
+    
+
     logger.info(f"Creating Batches [max_batch_size={MAX_BATCH_SIZE_MB}]")
     batch, _ = create_batch(
         downloads_json.get('partitions'),
