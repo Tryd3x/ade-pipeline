@@ -1,0 +1,50 @@
+volumes:
+  shared-workspace:
+    name: "hadoop-distributed-file-system"
+    driver: local
+
+services:
+  jupyterlab:
+    image: jupyterlab
+    container_name: jupyterlab
+    ports:
+      - 8888:8888
+    volumes:
+      - shared-workspace:/opt/workspace
+      - /home/hyderreza/codehub/ade-pipeline/keys/gcs-credentials.json:/keys/gcs-credentials.json:ro
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/keys/gcs-credentials.json
+  spark-master:
+    image: spark-master
+    container_name: spark-master
+    environment:
+      SPARK_LOCAL_IP: 'spark-master'
+    ports:
+      - 8080:8080
+      - 7077:7077
+    volumes:
+      - shared-workspace:/opt/workspace
+  worker:
+    image: spark-worker
+    # container_name: spark-worker
+    environment:
+      - SPARK_WORKER_CORES=1
+      - SPARK_WORKER_MEMORY=4g
+    # ports:
+      # - 8083:8081
+    volumes:
+      - shared-workspace:/opt/workspace
+    depends_on:
+      - spark-master
+  # spark-worker-2:
+  #   image: spark-worker
+  #   container_name: spark-worker-2
+  #   environment:
+  #     - SPARK_WORKER_CORES=1
+  #     - SPARK_WORKER_MEMORY=4g
+  #   ports:
+  #     - 8084:8081
+  #   volumes:
+  #     - shared-workspace:/opt/workspace
+  #   depends_on:
+  #     - spark-master

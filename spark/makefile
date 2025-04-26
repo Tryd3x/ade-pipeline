@@ -1,26 +1,13 @@
-build:
-	docker-compose build
+.PHONY: up down
 
-build-nc:
-	docker-compose build --no-cache
+up: ## Spin up spark cluster and jupyter containers
+	make down && docker compose up
 
-build-progress:
-	docker-compose build --no-cache --progress=plain
+down: ## Tear down spark cluster and jupyter containers
+	docker compose down
 
-down:
-	docker-compose down --volumes
+down-hard: ## Tear down spark cluster, jupyter containers and volumes
+	docker compose down -v
 
-run:
-	make down && docker-compose up
-
-run-scaled:
-	make down && docker-compose up --scale spark-worker=$(or $(n),1)
-
-run-d:
-	make down && docker-compose up -d
-
-stop:
-	docker-compose stop
-
-submit:
-	docker exec da-spark-master spark-submit --master spark://spark-master:7077 --deploy-mode client ./apps/$(app)
+run-scaled: ## Spin n spark-workers
+	make down && docker compose up --scale worker=$(n)
