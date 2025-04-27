@@ -1,9 +1,7 @@
-# Reference from offical Apache Spark repository Dockerfile for Kubernetes
-# https://github.com/apache/spark/blob/master/resource-managers/kubernetes/docker/src/main/dockerfiles/spark/Dockerfile
-ARG java_image_tag=17-jre
-FROM eclipse-temurin:${java_image_tag}
+ARG debian_buster_image_tag=8-jre-slim
+FROM openjdk:${debian_buster_image_tag}
 
-# -- Layer: OS + Python
+# -- Layer: OS + Python 3.7
 
 ARG shared_workspace=/opt/workspace
 
