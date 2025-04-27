@@ -1,3 +1,17 @@
+x-volume: &volume-common
+  volumes:
+      - shared-workspace:/opt/workspace
+      - /home/hyderreza/codehub/ade-pipeline/keys/gcs-credentials.json:/keys/gcs-credentials.json:ro
+
+x-worker: &worker-common
+  image: spark-worker
+  environment:
+    - SPARK_WORKER_CORES=1
+    - SPARK_WORKER_MEMORY=4g
+  <<: *volume-common
+  depends_on:
+    - spark-master
+  
 volumes:
   shared-workspace:
     name: "hadoop-distributed-file-system"
@@ -9,9 +23,7 @@ services:
     container_name: jupyterlab
     ports:
       - 8888:8888
-    volumes:
-      - shared-workspace:/opt/workspace
-      - /home/hyderreza/codehub/ade-pipeline/keys/gcs-credentials.json:/keys/gcs-credentials.json:ro
+    <<: *volume-common
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/keys/gcs-credentials.json
   spark-master:
@@ -22,28 +34,32 @@ services:
     ports:
       - 8080:8080
       - 7077:7077
-    volumes:
-      - shared-workspace:/opt/workspace
-  worker:
-    image: spark-worker
-    # container_name: spark-worker
-    environment:
-      - SPARK_WORKER_CORES=1
-      - SPARK_WORKER_MEMORY=4g
-    # ports:
-      # - 8083:8081
-    volumes:
-      - shared-workspace:/opt/workspace
-    depends_on:
-      - spark-master
-  # spark-worker-2:
+    <<: *volume-common
+
+  worker-1:
+    <<: *worker-common
+    container_name: spark-worker-1
+    ports:
+      - 8081:8081
+  worker-2:
+    <<: *worker-common
+    container_name: spark-worker-2
+    ports:
+      - 8082:8081
+  worker-3:
+    <<: *worker-common
+    container_name: spark-worker-3
+    ports:
+      - 8083:8081
+
+  # worker:
   #   image: spark-worker
-  #   container_name: spark-worker-2
+  #   # container_name: spark-worker
   #   environment:
   #     - SPARK_WORKER_CORES=1
   #     - SPARK_WORKER_MEMORY=4g
-  #   ports:
-  #     - 8084:8081
+  #   # ports:
+  #   #   - 8083:8081
   #   volumes:
   #     - shared-workspace:/opt/workspace
   #   depends_on:
