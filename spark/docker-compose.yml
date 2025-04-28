@@ -2,16 +2,18 @@ x-volume: &volume-common
   volumes:
       - shared-workspace:/opt/workspace
       - /home/hyderreza/codehub/ade-pipeline/keys/gcs-credentials.json:/keys/gcs-credentials.json:ro
+      - ./jobs:/opt/workspace
 
 x-worker: &worker-common
   image: spark-worker
   environment:
     - SPARK_WORKER_CORES=2
     - SPARK_WORKER_MEMORY=4g
+    - GOOGLE_APPLICATION_CREDENTIALS=/keys/gcs-credentials.json
   <<: *volume-common
   depends_on:
     - spark-master
-  
+
 volumes:
   shared-workspace:
     name: "hadoop-distributed-file-system"
@@ -30,7 +32,8 @@ services:
     image: spark-master
     container_name: spark-master
     environment:
-      SPARK_LOCAL_IP: 'spark-master'
+      - SPARK_LOCAL_IP=spark-master
+      - GOOGLE_APPLICATION_CREDENTIALS=/keys/gcs-credentials.json
     ports:
       - 8080:8080
       - 7077:7077
@@ -56,16 +59,3 @@ services:
     container_name: spark-worker-4
     ports:
       - 8084:8081
-
-  # worker:
-  #   image: spark-worker
-  #   # container_name: spark-worker
-  #   environment:
-  #     - SPARK_WORKER_CORES=1
-  #     - SPARK_WORKER_MEMORY=4g
-  #   # ports:
-  #   #   - 8083:8081
-  #   volumes:
-  #     - shared-workspace:/opt/workspace
-  #   depends_on:
-  #     - spark-master

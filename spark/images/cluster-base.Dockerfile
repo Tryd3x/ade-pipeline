@@ -7,7 +7,7 @@ ARG shared_workspace=/opt/workspace
 
 RUN mkdir -p ${shared_workspace} && \
     apt-get update -y && \
-    apt-get install -y python3 && \
+    apt-get install -y python3 python3-pip && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     rm -rf /var/lib/apt/lists/*
 
