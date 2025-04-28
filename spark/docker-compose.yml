@@ -6,7 +6,7 @@ x-volume: &volume-common
 x-worker: &worker-common
   image: spark-worker
   environment:
-    - SPARK_WORKER_CORES=1
+    - SPARK_WORKER_CORES=2
     - SPARK_WORKER_MEMORY=4g
   <<: *volume-common
   depends_on:
@@ -51,6 +51,11 @@ services:
     container_name: spark-worker-3
     ports:
       - 8083:8081
+  worker-4:
+    <<: *worker-common
+    container_name: spark-worker-4
+    ports:
+      - 8084:8081
 
   # worker:
   #   image: spark-worker

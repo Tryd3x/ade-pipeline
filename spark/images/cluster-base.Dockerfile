@@ -1,5 +1,5 @@
-ARG debian_buster_image_tag=8-jre-slim
-FROM openjdk:${debian_buster_image_tag}
+ARG debian_bullseye_image_tag=11-slim
+FROM openjdk:${debian_bullseye_image_tag}
 
 # -- Layer: OS + Python 3.7
 
