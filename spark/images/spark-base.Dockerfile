@@ -25,4 +25,5 @@ ENV PYSPARK_PYTHON=python3
 ENV PATH="${SPARK_HOME}/bin:${SPARK_HOME}/sbin:${PATH}"
 # -- Runtime
 
-WORKDIR ${SPARK_HOME}
+# WORKDIR ${SPARK_HOME}
+WORKDIR /opt/workspace

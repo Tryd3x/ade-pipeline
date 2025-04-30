@@ -1,7 +1,8 @@
 import os
 from pyspark.sql import SparkSession, functions as F
 from google.cloud import storage
-from pyspark.sql.types import StringType
+from pyspark.sql.types import StringType, IntegerType, FloatType
+import argparse
 
 def get_year(blob):
     return blob.name.split("/")[3]
@@ -12,22 +13,43 @@ def get_filename(blob):
 def scan_years(blobs): 
     return list({get_year(blob) for blob in blobs})
 
+# def perform_cast(df):
+#     df = (
+#         df
+#         .withColumn("patientid", F.col("patientid").cast(StringType()))
+#         .withColumn("patientagegroup", F.col("patientagegroup").cast(StringType()))
+#         .withColumn("patientonsetage", F.col("patientonsetage").cast(IntegerType()))
+#         .withColumn("patientonsetageunit", F.col("patientonsetageunit").cast(IntegerType()))
+#         .withColumn("patientsex", F.col("patientsex").cast(IntegerType()))
+#         .withColumn("patientweight", F.col("patientweight").cast(FloatType()))
+#         .withColumn("serious", F.col("serious").cast(IntegerType()))
+#         .withColumn("seriousnessdeath", F.col("seriousnessdeath").cast(IntegerType()))
+#         .withColumn("seriousnesshospitalization", F.col("seriousnesshospitalization").cast(IntegerType()))
+#         .withColumn("seriousnessdisabling", F.col("seriousnessdisabling").cast(IntegerType()))
+#         .withColumn("seriousnesslifethreatening", F.col("seriousnesslifethreatening").cast(IntegerType()))
+#         .withColumn("seriousnessother", F.col("seriousnessother").cast(IntegerType()))
+#         .withColumn("receivedate", F.col("receivedate").cast(StringType()))
+#         .withColumn("receiptdate", F.col("receiptdate").cast(StringType()))
+#         .withColumn("safetyreportid", F.col("safetyreportid").cast(StringType()))
+#     )
+
+#     return df
+
 def process_parquet(bucket, dir, year):
     blobs = list(bucket.list_blobs(prefix=f"{dir}/{year}"))
     for blob in blobs:
         source_blob = f"gs://{bucket.name}/{blob.name}"
-        destination_blob = f"gs://{bucket.name}/processed/pq/{dir.split('/')[-1]}/{year}/{get_filename(blob)}"
+        destination_blob = f"gs://{bucket.name}/cleaned/pq/{dir.split('/')[-1]}/{year}/{get_filename(blob)}"
 
         print(f"Reading file {source_blob}")
         # Read parquet
         df = spark.read.parquet(source_blob)
-
-        # Castnig to String
-        for col in df.columns:
-            df = df.withColumn(col, F.col(col).cast(StringType()))
+        
+        # Cast to right types
+        # df = perform_cast(df)
 
         # Write to Destination
-        df.repartition(4).write.mode("overwrite").parquet(destination_blob) 
+        df.repartition(4).write.mode("overwrite").parquet(destination_blob)
         print(f"Saved to {destination_blob}")
 
 SPARK_MASTER = "spark://spark-master:7077"
@@ -35,9 +57,9 @@ SPARK_MASTER = "spark://spark-master:7077"
 spark = (
     SparkSession
     .builder
-    .master(SPARK_MASTER)
+    # .master(SPARK_MASTER)
     .appName("process_type_mismatch")
-    # .config("spark.jars", "https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-hadoop3-2.2.14.jar") # GCS Connector
+    .config("spark.jars", "https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-hadoop3-2.2.14.jar") # GCS Connector
     .getOrCreate()
 )
 
@@ -48,8 +70,20 @@ client = storage.Client()
 bucket = client.get_bucket("zoomcamp-454219-ade-pipeline")
 dirs = ["data/pq/patient", "data/pq/drug", "data/pq/reaction"]
 
+parser = argparse.ArgumentParser(description="Spark job to fix mixed datatype")
+
+parser.add_argument("--only_years", help="List of years to perform the job on")
+
+args = parser.parse_args()
+years = []
+
 for dir in dirs:
-    years = scan_years(list(bucket.list_blobs(prefix=dir)))
-    # years = ['2004']
+    if not args.only_years:
+        years = scan_years(list(bucket.list_blobs(prefix=dir)))
+    else:
+        years = [s for s in args.only_years.split(',')]
+
     for year in years:
         process_parquet(bucket, dir, year)
+
+print("Job complete!")
