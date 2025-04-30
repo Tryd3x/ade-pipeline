@@ -2,6 +2,7 @@ x-volume: &volume-common
   volumes:
       - /home/hyderreza/codehub/ade-pipeline/keys/gcs-credentials.json:/keys/gcs-credentials.json:ro
       - ./shared-workspace:/opt/workspace
+      - ./jobs:/opt/workspace/jobs
 
 x-worker: &worker-common
   image: spark-worker
@@ -12,6 +13,9 @@ x-worker: &worker-common
   <<: *volume-common
   depends_on:
     - spark-master
+  entrypoint: ["/opt/workspace/runtime-pip-install.sh"]
+  command: ["bash", "-c", "spark-class org.apache.spark.deploy.worker.Worker spark://$${SPARK_MASTER_HOST}:$${SPARK_MASTER_PORT} >> $${SPARK_HOME}/logs/spark-worker.out"]
+
 
 services:
   jupyterlab:
@@ -22,12 +26,16 @@ services:
     <<: *volume-common
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/keys/gcs-credentials.json
+    entrypoint: ["/opt/workspace/runtime-pip-install.sh"]
+    command: ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root", "--NotebookApp.token=", "--NotebookApp.disable_check_xsrf=True"]
   spark-master:
     image: spark-master
     container_name: spark-master
     environment:
       - SPARK_LOCAL_IP=spark-master
       - GOOGLE_APPLICATION_CREDENTIALS=/keys/gcs-credentials.json
+    entrypoint: ["/opt/workspace/runtime-pip-install.sh"]
+    command: ["bash", "-c", "spark-class org.apache.spark.deploy.master.Master >> $${SPARK_HOME}/logs/spark-master.out"]
     ports:
       - 8080:8080 # Spark master UI
       - 4040:4040 # Spark Job UI
