@@ -48,8 +48,10 @@ terraform.rc
 
 # Ignore plan output
 *.tfplan
-
 .terraform.lock.hcl
 
 # Miscellaneous
 module_test
+
+# Ignore zip files
+**/*.zip

@@ -13,28 +13,6 @@ def get_filename(blob):
 def scan_years(blobs): 
     return list({get_year(blob) for blob in blobs})
 
-# def perform_cast(df):
-#     df = (
-#         df
-#         .withColumn("patientid", F.col("patientid").cast(StringType()))
-#         .withColumn("patientagegroup", F.col("patientagegroup").cast(StringType()))
-#         .withColumn("patientonsetage", F.col("patientonsetage").cast(IntegerType()))
-#         .withColumn("patientonsetageunit", F.col("patientonsetageunit").cast(IntegerType()))
-#         .withColumn("patientsex", F.col("patientsex").cast(IntegerType()))
-#         .withColumn("patientweight", F.col("patientweight").cast(FloatType()))
-#         .withColumn("serious", F.col("serious").cast(IntegerType()))
-#         .withColumn("seriousnessdeath", F.col("seriousnessdeath").cast(IntegerType()))
-#         .withColumn("seriousnesshospitalization", F.col("seriousnesshospitalization").cast(IntegerType()))
-#         .withColumn("seriousnessdisabling", F.col("seriousnessdisabling").cast(IntegerType()))
-#         .withColumn("seriousnesslifethreatening", F.col("seriousnesslifethreatening").cast(IntegerType()))
-#         .withColumn("seriousnessother", F.col("seriousnessother").cast(IntegerType()))
-#         .withColumn("receivedate", F.col("receivedate").cast(StringType()))
-#         .withColumn("receiptdate", F.col("receiptdate").cast(StringType()))
-#         .withColumn("safetyreportid", F.col("safetyreportid").cast(StringType()))
-#     )
-
-#     return df
-
 def process_parquet(bucket, dir, year):
     blobs = list(bucket.list_blobs(prefix=f"{dir}/{year}"))
     for blob in blobs:
@@ -59,7 +37,7 @@ spark = (
     .builder
     # .master(SPARK_MASTER)
     .appName("process_type_mismatch")
-    .config("spark.jars", "https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-hadoop3-2.2.14.jar") # GCS Connector
+    # .config("spark.jars", "https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-hadoop3-2.2.14.jar") # GCS Connector
     .getOrCreate()
 )
 
