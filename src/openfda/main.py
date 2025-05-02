@@ -3,11 +3,12 @@ import shlex
 import requests
 import subprocess
 from time import sleep
-from google.cloud import storage
 from dotenv import load_dotenv
+from google.cloud import storage
+from argparse import ArgumentParser
 load_dotenv()
 
-from utilities import ADE, part_size_mb, partition_id_by_year, read_json_file, get_module_logger
+from utilities import ADE, part_size_mb, partition_id_by_year, read_json_file, get_module_logger, filter_partition
 
 logger = get_module_logger(__name__)
 
@@ -210,26 +211,36 @@ def process_batch(batch):
 
 if __name__ == '__main__':
     print("Executing ingest.py")
+
+    # Add params to filter by year
+    parser = ArgumentParser()
+    parser.add_argument("--year",help="Year to perform extraction on")
+    args = parser.parse_args()
+    year = args.year
+
     URL = "https://api.fda.gov/download.json"
     MAX_BATCH_SIZE_MB = 13000
 
-    res = requests.get(URL)
     logger.info(f"Fetching data: {URL}")
+    res = requests.get(URL)
 
     logger.info("Remapping JSON object")
     data = res.json()
     downloads_json = extract_drug_events(data)
+    partitions = downloads_json.get('partitions')
 
-    # Add params to filter by year
-    
-
-    logger.info(f"Creating Batches [max_batch_size={MAX_BATCH_SIZE_MB}]")
-    batch, _ = create_batch(
-        downloads_json.get('partitions'),
-        max_batch_size_mb=MAX_BATCH_SIZE_MB
-        )
-    
-    process_batch(batch)
-    
-    print("Terminating in 5 mins...")
-    sleep(300)
+    if not year:
+        logger.info(f"Additional argument: None")
+        logger.info(f"Creating Batches [max_batch_size={MAX_BATCH_SIZE_MB}]")
+        batch, _ = create_batch(partitions, max_batch_size_mb=MAX_BATCH_SIZE_MB)
+        process_batch(batch)
+    else:
+        logger.info(f"Additional argument: --year={year}")
+        logger.info(f"Filtering partition for year: {year}")
+        filtered_parititons = filter_partition(year, partitions) 
+        logger.info(f"Creating Batches [max_batch_size={MAX_BATCH_SIZE_MB}]")
+        batch, _ = create_batch(
+            filtered_parititons,
+            max_batch_size_mb=MAX_BATCH_SIZE_MB
+            )
+        process_batch(batch)

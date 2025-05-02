@@ -18,3 +18,9 @@ def read_json_file(json_path):
     with open(json_path, "r") as f:
         d = json.load(f)
         return d
+    
+def filter_partition(year='', partitions=[]):
+    if not year:
+        print("No args provided")
+        return
+    return [p for p in partitions if p.get('partition_id') == year]
