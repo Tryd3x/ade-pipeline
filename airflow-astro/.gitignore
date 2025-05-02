@@ -9,3 +9,6 @@ airflow-webserver.pid
 webserver_config.py
 airflow.cfg
 airflow.db
+
+# Ignore SSH private keys
+/include/*.pem 
