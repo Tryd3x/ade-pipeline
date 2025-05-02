@@ -1,11 +1,21 @@
+x-common:
+  &common
+  volumes: 
+  - /var/run/docker.sock:/var/run/docker.sock
+  - /home/hyderreza/codehub/ade-pipeline/spark/jobs:/usr/local/jobs
+  networks:
+    - shared_network
+
+networks:
+  shared_network:
+    name: shared_network
+    external: true
 services:
   scheduler:
-    volumes: 
-      - /var/run/docker.sock:/var/run/docker.sock
     user: root
+    <<: *common
   webserver:
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+    <<: *common
   triggerer:
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+    <<: *common
+
