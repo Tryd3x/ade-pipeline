@@ -12,7 +12,4 @@ RUN apt-get update -y && \
     rm -rf /var/lib/apt/lists/*
 
 # -- Runtime
-EXPOSE 8888
 WORKDIR /opt/workspace
-
-# CMD ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root", "--NotebookApp.token=", "--NotebookApp.disable_check_xsrf=True"]

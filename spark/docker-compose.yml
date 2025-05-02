@@ -1,8 +1,9 @@
 x-volume: &volume-common
   volumes:
       - /home/hyderreza/codehub/ade-pipeline/keys/gcs-credentials.json:/keys/gcs-credentials.json:ro
-      - ./shared-workspace:/opt/workspace
-      - ./jobs:/opt/workspace/jobs
+      - /home/hyderreza/codehub/ade-pipeline/spark/shared-workspace:/opt/workspace
+      - /home/hyderreza/codehub/ade-pipeline/spark/jobs:/opt/workspace/jobs
+      - /home/hyderreza/codehub/ade-pipeline/spark/conf/:/usr/bin/spark-3.4.4-bin-hadoop3/conf/
 
 x-worker: &worker-common
   image: spark-worker
@@ -13,16 +14,24 @@ x-worker: &worker-common
   <<: *volume-common
   depends_on:
     - spark-master
+  networks:
+    - shared_network
   entrypoint: ["/opt/workspace/runtime-pip-install.sh"]
   command: ["bash", "-c", "spark-class org.apache.spark.deploy.worker.Worker spark://$${SPARK_MASTER_HOST}:$${SPARK_MASTER_PORT} >> $${SPARK_HOME}/logs/spark-worker.out"]
 
+networks:
+  shared_network:
+    name: shared_network
+    external: true
 
 services:
   jupyterlab:
     image: jupyterlab
     container_name: jupyterlab
+    networks:
+      - shared_network
     ports:
-      - 8888:8888
+      - 9888:8888
     <<: *volume-common
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/keys/gcs-credentials.json
@@ -35,30 +44,33 @@ services:
       - SPARK_LOCAL_IP=spark-master
       - GOOGLE_APPLICATION_CREDENTIALS=/keys/gcs-credentials.json
     entrypoint: ["/opt/workspace/runtime-pip-install.sh"]
-    command: ["bash", "-c", "spark-class org.apache.spark.deploy.master.Master >> $${SPARK_HOME}/logs/spark-master.out"]
+    command: ["bash", "-c", "/usr/sbin/sshd && spark-class org.apache.spark.deploy.master.Master >> $${SPARK_HOME}/logs/spark-master.out"]
+    networks:
+      - shared_network
     ports:
-      - 8080:8080 # Spark master UI
+      - 9090:8080 # Spark master UI
       - 4040:4040 # Spark Job UI
       - 7077:7077 # Spark Master (for submitting jobs)
+      - 22:22     # SSH port
     <<: *volume-common
 
   worker-1:
     <<: *worker-common
     container_name: spark-worker-1
     ports:
-      - 8081:8081
+      - 9081:8081
   worker-2:
     <<: *worker-common
     container_name: spark-worker-2
     ports:
-      - 8082:8081
+      - 9082:8081
   worker-3:
     <<: *worker-common
     container_name: spark-worker-3
     ports:
-      - 8083:8081
+      - 9083:8081
   worker-4:
     <<: *worker-common
     container_name: spark-worker-4
     ports:
-      - 8084:8081
+      - 9084:8081
