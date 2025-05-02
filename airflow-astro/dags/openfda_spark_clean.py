@@ -3,7 +3,7 @@ from airflow.providers.ssh.operators.ssh import SSHOperator
 from datetime import datetime
 
 with DAG(
-    dag_id="openfda_spark_ssh_clean",
+    dag_id="openfda_spark_clean",
     start_date=datetime(2024, 1, 1),
     schedule_interval=None,
     catchup=False,
