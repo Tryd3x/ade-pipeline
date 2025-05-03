@@ -3,10 +3,12 @@
 SPARK_VERSION="3.4.4"
 HADOOP_VERSION="3"
 JUPYTERLAB_VERSION="4.1.5"
+SHARED_WORKSPACE="/opt/workspace"
 
 # -- Building the Images
 
 docker build \
+  --build-arg shared_workspace="${SHARED_WORKSPACE}" \
   -f cluster-base.Dockerfile \
   -t cluster-base .
 
