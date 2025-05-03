@@ -1,9 +1,10 @@
 x-volume: &volume-common
   volumes:
       - /home/hyderreza/codehub/ade-pipeline/keys/gcs-credentials.json:/keys/gcs-credentials.json:ro
-      - /home/hyderreza/codehub/ade-pipeline/spark/shared-workspace:/opt/workspace
+      - /home/hyderreza/codehub/ade-pipeline/spark/volumes/shared-workspace:/opt/workspace
       - /home/hyderreza/codehub/ade-pipeline/spark/jobs:/opt/workspace/jobs
-      - /home/hyderreza/codehub/ade-pipeline/spark/conf/:/usr/bin/spark-3.4.4-bin-hadoop3/conf/
+      - /home/hyderreza/codehub/ade-pipeline/spark/volumes/spark-conf/:/usr/bin/spark-3.4.4-bin-hadoop3/conf
+      - /home/hyderreza/codehub/ade-pipeline/spark/volumes/livy-conf/:/opt/livy/conf
 
 x-worker: &worker-common
   image: spark-worker
@@ -37,6 +38,20 @@ services:
       - GOOGLE_APPLICATION_CREDENTIALS=/keys/gcs-credentials.json
     entrypoint: ["/opt/workspace/runtime-pip-install.sh"]
     command: ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root", "--NotebookApp.token=", "--NotebookApp.disable_check_xsrf=True"]
+  
+  livy-server:
+    image: livy
+    container_name: Livy
+    <<: *volume-common
+    networks:
+      - shared_network
+    ports:
+      - 8998:8998
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/keys/gcs-credentials.json
+    entrypoint: ["/opt/workspace/runtime-pip-install.sh"]
+    command: ["livy-server"]
+      
   spark-master:
     image: spark-master
     container_name: spark-master

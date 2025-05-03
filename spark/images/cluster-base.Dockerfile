@@ -12,6 +12,7 @@ RUN apt-get update -y && \
         wget \
         curl \
         procps \
+        iputils-ping \
         && \
     mkdir -p ${SHARED_WORKSPACE} && \
     ln -s /usr/bin/python3 /usr/bin/python && \
