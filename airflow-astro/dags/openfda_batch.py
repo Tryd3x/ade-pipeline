@@ -3,18 +3,13 @@ from datetime import datetime
 from airflow import DAG
 from airflow.models.param import Param
 from airflow.providers.docker.operators.docker import DockerOperator
-from airflow.providers.ssh.operators.ssh import SSHOperator
+from airflow.providers.apache.livy.operators.livy import LivyOperator
+# from airflow.providers.ssh.operators.ssh import SSHOperator
 from docker.types import Mount
 
-# default_args = {
-#     'owner': 'hyderreza',
-#     'depends_on_past': False,
-#     'email_on_failure': False,
-#     'email_on_retry': False,
-# }
 
 params = {
-    "year" : Param("", type="string", description="Param to extract and transform selected year")
+    "year" : Param("", type="string", description="Select year to extract and transform")
 }
 
 with DAG(
@@ -32,8 +27,8 @@ with DAG(
 
 ) as dag:
     
-    ingest_data = DockerOperator(
-        task_id="fetch_batch_data",
+    ingest = DockerOperator(
+        task_id="fetch_batch",
         container_name="openfda-ingest",
         image="ade-pipeline/openfda:latest",
         docker_url="unix:///var/run/docker.sock",
@@ -47,19 +42,16 @@ with DAG(
         command="--year={{ params.year }}"
     )
 
-    clean_data = SSHOperator(
-        task_id='clean_batch_data',
-        ssh_conn_id='spark_ssh',
-        command="""
-        source /opt/workspace/env.sh && \
-        spark-submit \
-        --py-files /opt/workspace/jobs/process_raw_layer.zip \
-        --deploy-mode client \
-        /opt/workspace/jobs/process_raw_layer/main.py --only_years={{ params.year }}
-        """,
+    transform = LivyOperator(
+        task_id="transform_batch",
+        livy_conn_id="livy_default",
+        file="/opt/workspace/jobs/process_raw_layer/main.py",
+        args=["--only_years={{ params.year }}"],
+        py_files=["/opt/workspace/jobs/process_raw_layer.zip"],
+        polling_interval=5,   
     )
 
-    ingest_data >> clean_data
+    ingest >> transform
 
     
 
