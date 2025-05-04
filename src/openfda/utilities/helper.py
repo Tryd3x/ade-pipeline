@@ -19,8 +19,9 @@ def read_json_file(json_path):
         d = json.load(f)
         return d
     
-def filter_partition(year='', partitions=[]):
-    if not year:
+def filter_partition(years='', partitions=[]):
+    years = [y.strip() for y in years.split(",")]
+    if not years:
         print("No args provided")
         return
-    return [p for p in partitions if p.get('partition_id') == year]
+    return [p for p in partitions if p.get('partition_id') in years]
