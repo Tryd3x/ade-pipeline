@@ -47,6 +47,7 @@ services:
       - shared_network
     ports:
       - 8998:8998
+      - 8040-8050:4040-4050
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/keys/gcs-credentials.json
     entrypoint: ["/opt/workspace/runtime-pip-install.sh"]

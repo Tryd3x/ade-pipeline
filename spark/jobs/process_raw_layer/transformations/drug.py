@@ -109,6 +109,14 @@ class Drug:
                     .otherwise(F.col("drugstartdate"))
                 )
             )
+            .withColumn(
+                "drugstartdate",
+                (
+                    F
+                    .when(F.col("drugstartdate") < F.lit("19000101"), None)
+                    .otherwise(F.col("drugstartdate"))
+                )
+            )
             .withColumn("drugstartdate",(F.to_date("drugstartdate","yyyyMMdd")))
         )
 
@@ -120,6 +128,14 @@ class Drug:
                     F
                     .when(F.length("drugenddate") == 4, F.concat("drugenddate",F.lit("0101")))
                     .when(F.length("drugenddate") == 6, F.concat("drugenddate",F.lit("01")))
+                    .otherwise(F.col("drugenddate"))
+                )
+            )
+                        .withColumn(
+                "drugenddate",
+                (
+                    F
+                    .when(F.col("drugenddate") < F.lit("19000101"), None)
                     .otherwise(F.col("drugenddate"))
                 )
             )

@@ -23,8 +23,8 @@ class Patient:
             .withColumn("seriousnessdisabling", F.col("seriousnessdisabling").cast(IntegerType()))
             .withColumn("seriousnesslifethreatening", F.col("seriousnesslifethreatening").cast(IntegerType()))
             .withColumn("seriousnessother", F.col("seriousnessother").cast(IntegerType()))
-            .withColumn("receivedate", F.col("receivedate").cast(IntegerType()))
-            .withColumn("receiptdate", F.col("receiptdate").cast(IntegerType()))
+            .withColumn("receivedate", F.col("receivedate").cast(StringType()))
+            .withColumn("receiptdate", F.col("receiptdate").cast(StringType()))
             .withColumn("safetyreportid", F.col("safetyreportid").cast(IntegerType()))
         )   
 
