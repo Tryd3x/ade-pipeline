@@ -13,6 +13,12 @@ To build an end-to-end data engineering pipeline that:
 
 The final output helps stakeholders answer critical questions about drug-related risks in aging populations.
 
+## Proposed Architecture
+
+![alt text][flowchart]
+
+[flowchart]: https://github.com/Tryd3x/ade-pipeline/assets/images/flowchart.png "Flowchart"
+
 ## ❓ Key Questions the Project Aims to Answer
 
 - Which medications are most frequently associated with serious adverse events in patients over 65?
