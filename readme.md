@@ -17,7 +17,7 @@ The final output helps stakeholders answer critical questions about drug-related
 
 ![alt text][flowchart]
 
-[flowchart]: https://github.com/Tryd3x/ade-pipeline/assets/images/flowchart.png "Flowchart"
+[flowchart]: https://github.com/Tryd3x/ade-pipeline/blob/main/assets/images/flowchart.png "Flowchart"
 
 ## ❓ Key Questions the Project Aims to Answer
 
