@@ -94,6 +94,8 @@ class Drug:
             .withColumn("drugtreatmentdurationnumb", F.col("drugtreatmentdurationnumb").cast(IntegerType()))
             .withColumn("drugtreatmentdurationunit", F.col("drugtreatmentdurationunit").cast(StringType()))
             .withColumn("drugrecurreadministration", F.col("drugrecurreadministration").cast(IntegerType()))
+            .withColumn("actiondrug", F.col("actiondrug").cast(IntegerType()))
+            .withColumn("drugcharacterization", F.col("drugcharacterization").cast(IntegerType()))
             )
 
     def transform(self):
@@ -201,4 +203,29 @@ class Drug:
                 )
             )
             .drop("drugrecurreadministration")
+        )
+
+        self.df = self.df.withColumn(
+            "actiondrug",
+            (
+                F
+                .when(F.col("actiondrug") == 1, "Drug withdrawn")
+                .when(F.col("actiondrug") == 2, "Dose reduced")
+                .when(F.col("actiondrug") == 3, "Dose increased")
+                .when(F.col("actiondrug") == 4, "Dose not changed")
+                .when(F.col("actiondrug") == 5, "Unknown")
+                .when(F.col("actiondrug") == 6, "Not applicable")
+                .otherwise(None)
+            )
+        )
+
+        self.df = self.df.withColumn(
+            "drugcharacterization",
+            (
+                F
+                .when(F.col("drugcharacterization") == 1, "Suspect")
+                .when(F.col("drugcharacterization") == 2, "Concomitant ")
+                .when(F.col("drugcharacterization") == 3, "Interacting ")
+                .otherwise(None)
+            )
         )
