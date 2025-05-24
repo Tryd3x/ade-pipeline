@@ -15,24 +15,32 @@ class ADE:
         "patientonsetageunit",
         "patientsex",
         "patientweight",
+        "fulfillexpeditecriteria",                           
+        "primarysourcecountry",                              
+        "occurcountry",                                      
+        "reporttype",                                        
+        "receiptdate",
+        "receivedate",
+        "safetyreportid",
+        "transmissiondate",                                  
         "serious",
+        "seriousnesscongenitalanomali",                      
         "seriousnessdeath",
         "seriousnesshospitalization",
         "seriousnessdisabling",
         "seriousnesslifethreatening",
         "seriousnessother",
-        "receivedate",
-        "receiptdate",
-        "safetyreportid"
     ]
 
     # Drug information
     drug_header = [
         "patientid",
+        "actiondrug",                                     
+        "drugcharacterization",                           
         "medicinalproduct",
         "activesubstancename",
-        "drugindication",
-        "drugadministrationroute",
+        "drugindication",    
+        "drugadministrationroute",    
         "drugstartdate",
         "drugenddate",
         "drugdosagetext",
@@ -68,21 +76,31 @@ class ADE:
                 patient.get("patientonsetageunit"),
                 patient.get("patientsex"),
                 patient.get("patientweight"),
-                patient.get("serious"),
-                patient.get("seriousnessdeath"),
-                patient.get("seriousnesshospitalization"),
-                patient.get("seriousnessdisabling"),
-                patient.get("seriousnesslifethreatening"),
-                patient.get("seriousnessother"),
-                patient.get("receivedate"),
-                patient.get("receiptdate"),
-                patient.get("safetyreportid"),
+                item.get("fulfillexpeditecriteria"),                            # Added
+                item.get("primarysourcecountry"),                               # Added
+                item.get("occurcountry"),                                       # Added
+                item.get("reporttype"),                                         # Added
+                item.get("receiptdate"),
+                item.get("receivedate"),
+                item.get("safetyreportid"),
+                item.get("transmissiondate"),                                   # Added
+                item.get("serious"),
+                item.get("seriousnesscongenitalanomali"),                       # Added
+                item.get("seriousnessdeath"),
+                item.get("seriousnesshospitalization"),
+                item.get("seriousnessdisabling"),
+                item.get("seriousnesslifethreatening"),
+                item.get("seriousnessother"),
             ))
 
             drugs = patient.get('drug',[])
             for drug in drugs:
                 self.drugs_list.append((
                     patientid,
+                    drug.get("actiondrug"),                                     # Added
+                    drug.get("drugcharacterization"),                           # Added
+                    
+
                     drug.get("medicinalproduct"),
                     drug.get("activesubstance",{}).get("activesubstancename"),
                     drug.get("drugindication"),    

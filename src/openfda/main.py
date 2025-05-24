@@ -137,6 +137,9 @@ def process_batch(batch):
         logger.info(f'============================= BATCH {i+1} =============================')
         logger.info('===================================================================')
 
+        # Define metrics here
+
+
         # Partitioon iteration
         for j,p in enumerate(b):
             logger.info(f'----------------- Processing partition {j+1} -----------------')  
@@ -167,6 +170,8 @@ def process_batch(batch):
                     ade.extractJSON(temp_json)
                     logger.info(f"Parsed json file to ADE object: {dl_filepath}")
 
+                    # Update metrics here
+
                     # Save ADE object as parquet file
                     ade.save_as_parquet(save_to=PQ_DIR,subfolder=p.get('partition_id'),fname=dl_filename)
                     file_count+=1
@@ -193,13 +198,15 @@ def process_batch(batch):
             logger.info("Purge completed")
 
         logger.info('===================================================================')
-        logger.info(f'============================= Batch {i} END =========================')
+        logger.info(f'============================= Batch {i+1} END =========================')
         logger.info('===================================================================')
     
     # Possible log additions:
     # - Summary of the batch script
     # - Total batch processed
     # - Total Size of the batch processed
+
+    # Publish Metrics here
 
     # Clear temp folder here
     logger.info("Deleting temporary directories")
