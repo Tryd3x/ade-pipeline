@@ -1,0 +1,7 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: 'openFDA_drug_ingestion'
+    static_configs:
+      - targets: ['ingestion:8000'] # The port depends on the start_http_server(port) inside the ingestion script

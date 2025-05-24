@@ -13,14 +13,6 @@ provider "google" {
   region      = var.region
 }
 
-resource "google_storage_bucket" "ade-pipeline-logs" {
-  name          = var.gcs_log_bucket_name
-  location      = var.region
-  force_destroy = true
-
-  labels = var.labels
-}
-
 resource "google_storage_bucket" "ade-pipeline" {
   name          = var.gcs_bucket_name
   location      = var.region
@@ -34,10 +26,6 @@ resource "google_storage_bucket" "ade-pipeline" {
     action {
       type = "AbortIncompleteMultipartUpload"
     }
-  }
-
-  logging {
-    log_bucket = var.gcs_log_bucket_name
   }
 }
 

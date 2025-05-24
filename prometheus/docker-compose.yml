@@ -1,0 +1,30 @@
+networks:
+  prometheus-network:
+    name: prometheus-network
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./volume/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - prometheus-network
+
+  ingestion:
+    image: ade-pipeline/openfda:latest
+    container_name: ingestion
+    networks:
+      - prometheus-network
+    command: "--year=2004"
+    ports:
+      - "8000:8000"
+    depends_on:
+      prometheus:
+          condition: service_started
+    volumes:
+      - /home/hyderreza/codehub/ade-pipeline/keys/gcs-credentials.json:/app/gcs-credentials.json:ro
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/gcs-credentials.json
