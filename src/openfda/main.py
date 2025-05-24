@@ -1,4 +1,5 @@
 import os
+import time
 import shlex
 import requests
 import subprocess
@@ -6,9 +7,10 @@ from time import sleep
 from dotenv import load_dotenv
 from google.cloud import storage
 from argparse import ArgumentParser
+from prometheus_client import start_http_server
 load_dotenv()
 
-from utilities import ADE, part_size_mb, partition_id_by_year, read_json_file, get_module_logger, filter_partition
+from utilities import ADE, Metrics, part_size_mb, partition_id_by_year, read_json_file, get_module_logger, filter_partition
 
 logger = get_module_logger(__name__)
 
@@ -118,7 +120,7 @@ def upload_to_gcs(local_base_dir, bucket_name, gcs_prefix):
                 
                 logger.info(f"Uploaded {local_file_path} to gs://{bucket_name}/{gcs_blob_path}")
 
-def process_batch(batch):
+def process_batch(batch, metrics):
     logger.info("Initiating Batch Processing")
 
     # Create temp directories
@@ -137,8 +139,7 @@ def process_batch(batch):
         logger.info(f'============================= BATCH {i+1} =============================')
         logger.info('===================================================================')
 
-        # Define metrics here
-
+        metrics.reset()
 
         # Partitioon iteration
         for j,p in enumerate(b):
@@ -168,6 +169,9 @@ def process_batch(batch):
                     ade = ADE()
                     temp_json = read_json_file(dl_filepath)
                     ade.extractJSON(temp_json)
+
+                    metrics.update(ade)
+
                     logger.info(f"Parsed json file to ADE object: {dl_filepath}")
 
                     # Update metrics here
@@ -201,12 +205,8 @@ def process_batch(batch):
         logger.info(f'============================= Batch {i+1} END =========================')
         logger.info('===================================================================')
     
-    # Possible log additions:
-    # - Summary of the batch script
-    # - Total batch processed
-    # - Total Size of the batch processed
-
     # Publish Metrics here
+    metrics.publish()
 
     # Clear temp folder here
     logger.info("Deleting temporary directories")
@@ -227,6 +227,7 @@ if __name__ == '__main__':
 
     URL = "https://api.fda.gov/download.json"
     MAX_BATCH_SIZE_MB = 13000
+    PROMETHEUS_PORT = 8000
 
     logger.info(f"Fetching data: {URL}")
     res = requests.get(URL)
@@ -236,11 +237,14 @@ if __name__ == '__main__':
     downloads_json = extract_drug_events(data)
     partitions = downloads_json.get('partitions')
 
+    metrics = Metrics()
+    start_http_server(PROMETHEUS_PORT, registry=metrics.registry)
+
     if not year:
         logger.info(f"Additional argument: None")
         logger.info(f"Creating Batches [max_batch_size={MAX_BATCH_SIZE_MB}]")
         batch, _ = create_batch(partitions, max_batch_size_mb=MAX_BATCH_SIZE_MB)
-        process_batch(batch)
+        process_batch(batch, metrics)
     else:
         logger.info(f"Additional argument: --year={year}")
         logger.info(f"Filtering partition for year: {year}")
@@ -250,4 +254,7 @@ if __name__ == '__main__':
             filtered_parititons,
             max_batch_size_mb=MAX_BATCH_SIZE_MB
             )
-        process_batch(batch)
+        process_batch(batch, metrics)
+    
+
+    time.sleep(300)

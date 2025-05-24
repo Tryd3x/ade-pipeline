@@ -33,3 +33,4 @@ six==1.17.0
 tomli==2.2.1
 tzdata==2025.2
 urllib3==2.4.0
+prometheus_client==0.21.1
