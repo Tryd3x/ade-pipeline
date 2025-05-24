@@ -40,7 +40,10 @@ class Metrics:
         """ Update null ratio"""
         for s in self.schema:
             for k,v in self.null_count[s].items():
-                self.null_ratio[s][k] = float(v / self.total_records[s])
+                try:
+                    self.null_ratio[s][k] = float(v / self.total_records[s])
+                except ZeroDivisionError:
+                    self.null_ratio[s][k] = float(0.0)
 
     def publish(self):
         """ Pulish updated metrics to prometheus"""
