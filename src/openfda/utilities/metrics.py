@@ -1,15 +1,17 @@
-from prometheus_client import Gauge, CollectorRegistry
+from prometheus_client import Gauge, CollectorRegistry, push_to_gateway, delete_from_gateway
 from time import time
 
 class Metrics:
     schema = ['patients', 'drugs', 'reactions']
-    def __init__(self,):
+    def __init__(self, job, gateway):
         self.start_time = time()
         self.total_records = {k:0 for k in self.schema}
         self.null_count = {k:{} for k in self.schema}
         self.null_ratio = {k:{} for k in self.schema}
 
         self.registry = CollectorRegistry()
+        self.gateway = gateway
+        self.job = job
 
         # Metrics
         self.record_gauge = Gauge('total_records', 'Total records per table', ['table'], registry=self.registry)
@@ -45,12 +47,13 @@ class Metrics:
                 except ZeroDivisionError:
                     self.null_ratio[s][k] = float(0.0)
 
-    def publish(self):
+    def publish(self,):
         """ Pulish updated metrics to prometheus"""
 
         # Invoke _null_ratio
         self._null_ratio()
 
+        # Processing time
         duration = time() - self.start_time
 
         # Update Gauge
@@ -66,3 +69,9 @@ class Metrics:
                 self.ratio_gauge.labels(table=table, field=field).set(ratio)
         
         self.processing_time.set(duration)
+
+        push_to_gateway(gateway=self.gateway,job=self.job,registry=self.registry)
+
+    def close(self):
+        self.reset()
+        delete_from_gateway(gateway=self.gateway,job=self.job)

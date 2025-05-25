@@ -174,8 +174,6 @@ def process_batch(batch, metrics):
 
                     logger.info(f"Parsed json file to ADE object: {dl_filepath}")
 
-                    # Update metrics here
-
                     # Save ADE object as parquet file
                     ade.save_as_parquet(save_to=PQ_DIR,subfolder=p.get('partition_id'),fname=dl_filename)
                     file_count+=1
@@ -219,16 +217,16 @@ def process_batch(batch, metrics):
 if __name__ == '__main__':
     print("Executing ingest.py")
 
-    # Add params to filter by year
     parser = ArgumentParser()
     parser.add_argument("--year",help="Year to perform extraction on")
-    parser.add_argument("--max_batch_size",help="Max size of batch")
+    parser.add_argument("--max_batch_size_mb",help="Max size of batch in MB")
+    parser.add_argument("--metrics_gateway",help="Prometheus pushgateway url -> host:port")
     args = parser.parse_args()
     year = args.year
 
     URL = "https://api.fda.gov/download.json"
-    MAX_BATCH_SIZE_MB = int(args.max_batch_size) if args.max_batch_size else 13000
-    PROMETHEUS_PORT = 8000
+    MAX_BATCH_SIZE_MB = int(args.max_batch_size_mb) if args.max_batch_size_mb else 13000
+    PROMETHEUS_GATEWAY = args.metrics_gateway if args.metrics_gateway else None 
 
     logger.info(f"Fetching data: {URL}")
     res = requests.get(URL)
@@ -238,8 +236,9 @@ if __name__ == '__main__':
     downloads_json = extract_drug_events(data)
     partitions = downloads_json.get('partitions')
 
-    metrics = Metrics()
-    start_http_server(PROMETHEUS_PORT, registry=metrics.registry)
+    metrics = Metrics(job="openfda_ingestion",gateway=PROMETHEUS_GATEWAY)
+
+    logger.info(f"Metrics gateway: {PROMETHEUS_GATEWAY}")
 
     if not year:
         logger.info(f"Additional argument: None")
@@ -257,5 +256,4 @@ if __name__ == '__main__':
             )
         process_batch(batch, metrics)
     
-
-    time.sleep(300)
+    metrics.close()
