@@ -1,6 +1,10 @@
 networks:
-  prometheus-network:
-    name: prometheus-network
+  monitor-network:
+    name: monitor-network
+
+volumes:
+  prometheus_data:
+  grafana_data:
 
 services:
   prometheus:
@@ -9,16 +13,29 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./volume/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./volume/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
     networks:
-      - prometheus-network
+      - monitor-network
+  
+  grafana:
+    container_name: grafana
+    image: grafana/grafana
+    networks:
+    - monitor-network
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
 
   ingestion:
     image: ade-pipeline/openfda:latest
     container_name: ingestion
     networks:
-      - prometheus-network
-    command: "--year=2004"
+      - monitor-network
+    command: "--year=2004,2005 --max_batch_size=2000"
     ports:
       - "8000:8000"
     depends_on:

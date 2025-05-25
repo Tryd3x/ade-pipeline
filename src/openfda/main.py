@@ -205,8 +205,8 @@ def process_batch(batch, metrics):
         logger.info(f'============================= Batch {i+1} END =========================')
         logger.info('===================================================================')
     
-    # Publish Metrics here
-    metrics.publish()
+        # Publish Metrics here
+        metrics.publish()
 
     # Clear temp folder here
     logger.info("Deleting temporary directories")
@@ -222,11 +222,12 @@ if __name__ == '__main__':
     # Add params to filter by year
     parser = ArgumentParser()
     parser.add_argument("--year",help="Year to perform extraction on")
+    parser.add_argument("--max_batch_size",help="Max size of batch")
     args = parser.parse_args()
     year = args.year
 
     URL = "https://api.fda.gov/download.json"
-    MAX_BATCH_SIZE_MB = 13000
+    MAX_BATCH_SIZE_MB = int(args.max_batch_size) if args.max_batch_size else 13000
     PROMETHEUS_PORT = 8000
 
     logger.info(f"Fetching data: {URL}")
