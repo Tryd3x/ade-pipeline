@@ -1,9 +1,13 @@
 from prometheus_client import Gauge, CollectorRegistry, push_to_gateway, delete_from_gateway
 from time import time
+from utilities import get_module_logger
+
+logger = get_module_logger(__name__)
 
 class Metrics:
     schema = ['patients', 'drugs', 'reactions']
     def __init__(self, job, gateway):
+        logger.info("Initializing Metrics")
         self.start_time = time()
         self.total_records = {k:0 for k in self.schema}
         self.null_count = {k:{} for k in self.schema}
@@ -70,8 +74,11 @@ class Metrics:
         
         self.processing_time.set(duration)
 
+        logger.info(f"Posting metrics to pushgateway: {self.gateway}")
         push_to_gateway(gateway=self.gateway,job=self.job,registry=self.registry)
 
     def close(self):
         self.reset()
+
+        logger.info(f"Clearing Metrics")
         delete_from_gateway(gateway=self.gateway,job=self.job)

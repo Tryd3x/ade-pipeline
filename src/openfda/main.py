@@ -215,7 +215,6 @@ def process_batch(batch, metrics):
     logger.info("Batch Processing Completed!")
 
 if __name__ == '__main__':
-    print("Executing ingest.py")
 
     parser = ArgumentParser()
     parser.add_argument("--year",help="Year to perform extraction on")
@@ -256,4 +255,5 @@ if __name__ == '__main__':
             )
         process_batch(batch, metrics)
     
+    sleep(30)
     metrics.close()
