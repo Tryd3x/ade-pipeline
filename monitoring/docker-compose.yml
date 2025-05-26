@@ -2,10 +2,6 @@ networks:
   monitor-network:
     name: monitor-network
 
-volumes:
-  prometheus_data:
-  grafana_data:
-
 services:
   prometheus:
     image: prom/prometheus:latest
@@ -14,7 +10,17 @@ services:
       - "9090:9090"
     volumes:
       - ./volume/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
+    networks:
+      - monitor-network
+    depends_on:
+      pushgateway:
+        condition: service_started
+  
+  pushgateway:
+    image: prom/pushgateway:latest
+    container_name: pushgateway
+    ports:
+      - "9091:9091"
     networks:
       - monitor-network
   
@@ -26,7 +32,7 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - grafana_data:/var/lib/grafana
+      - ./volume/grafana:/var/lib/grafana
     depends_on:
       - prometheus
 
@@ -35,7 +41,9 @@ services:
     container_name: ingestion
     networks:
       - monitor-network
-    command: "--year=2004,2005 --max_batch_size=2000"
+    command: >
+      --year=2004,2005,2006,2007,2008,2009 --max_batch_size=2000 
+      --metrics_gateway=pushgateway:9091
     ports:
       - "8000:8000"
     depends_on:
