@@ -1,0 +1,1 @@
+zip -r process_raw_layer.zip process_raw_layer -x '*.pyc' -x '__pycache__/*'

@@ -64,7 +64,7 @@ services:
     networks:
       - shared_network
     ports:
-      - 9090:8080 # Spark master UI
+      - 9000:8080 # Spark master UI
       - 4040:4040 # Spark Job UI
       - 7077:7077 # Spark Master (for submitting jobs)
     <<: *volume-common

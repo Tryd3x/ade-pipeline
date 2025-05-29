@@ -1,7 +1,24 @@
 from pyspark.sql.types import StringType, FloatType, IntegerType
 from pyspark.sql import functions as F
+from .helper import clean_date_column
 
 class Drug:
+    columns = [
+        'patientid',
+        'actiondrug',
+        'drugcharacterization',
+        'medicinalproduct',
+        'activesubstancename',
+        'drug_indication',
+        'administration_route',
+        'drug_start_date',
+        'drug_end_date',
+        'drugdosagetext',
+        'dosage_mg',
+        'treatment_duration_days',
+        'drug_reaction_after_readministration'
+    ]
+
     drug_administration_route_map = {
         "001": "Auricular (otic)",
         "002": "Buccal",
@@ -84,14 +101,14 @@ class Drug:
             .withColumn("patientid", F.col("patientid").cast(StringType()))
             .withColumn("medicinalproduct", F.col("medicinalproduct").cast(StringType()))
             .withColumn("activesubstancename", F.col("activesubstancename").cast(StringType()))
+            .withColumn("drugindication", F.col("drugindication").cast(StringType()))
             .withColumn("drugadministrationroute", F.col("drugadministrationroute").cast(StringType()))
             .withColumn("drugstartdate", F.col("drugstartdate").cast(StringType()))
             .withColumn("drugenddate", F.col("drugenddate").cast(StringType()))
             .withColumn("drugdosagetext", F.col("drugdosagetext").cast(StringType()))
             .withColumn("drugstructuredosagenumb", F.col("drugstructuredosagenumb").cast(FloatType()))
             .withColumn("drugstructuredosageunit", F.col("drugstructuredosageunit").cast(StringType()))
-            .withColumnRenamed("drugtreatmentduration", "drugtreatmentdurationnumb")
-            .withColumn("drugtreatmentdurationnumb", F.col("drugtreatmentdurationnumb").cast(IntegerType()))
+            .withColumn("drugtreatmentduration", F.col("drugtreatmentduration").cast(IntegerType()))
             .withColumn("drugtreatmentdurationunit", F.col("drugtreatmentdurationunit").cast(StringType()))
             .withColumn("drugrecurreadministration", F.col("drugrecurreadministration").cast(IntegerType()))
             .withColumn("actiondrug", F.col("actiondrug").cast(IntegerType()))
@@ -99,122 +116,78 @@ class Drug:
             )
 
     def transform(self):
-        # Fix missing parts of the date
-        self.df = (
-            self.df
-            .withColumn(
-                "drugstartdate",
-                (
-                    F
-                    .when(F.length("drugstartdate") == 4, F.concat("drugstartdate",F.lit("0101")))
-                    .when(F.length("drugstartdate") == 6, F.concat("drugstartdate",F.lit("01")))
-                    .otherwise(F.col("drugstartdate"))
-                )
-            )
-            .withColumn(
-                "drugstartdate",
-                (
-                    F
-                    .when(F.col("drugstartdate") < F.lit("19000101"), None)
-                    .otherwise(F.col("drugstartdate"))
-                )
-            )
-            .withColumn("drugstartdate",(F.to_date("drugstartdate","yyyyMMdd")))
-        )
+        # Fix date
+        self.df = clean_date_column(self.df, "drugstartdate").withColumnRenamed("drugstartdate", "drug_start_date")
 
-        self.df = (
-            self.df
-            .withColumn(
-                "drugenddate",
-                (
-                    F
-                    .when(F.length("drugenddate") == 4, F.concat("drugenddate",F.lit("0101")))
-                    .when(F.length("drugenddate") == 6, F.concat("drugenddate",F.lit("01")))
-                    .otherwise(F.col("drugenddate"))
-                )
-            )
-                        .withColumn(
-                "drugenddate",
-                (
-                    F
-                    .when(F.col("drugenddate") < F.lit("19000101"), None)
-                    .otherwise(F.col("drugenddate"))
-                )
-            )
-            .withColumn("drugenddate",(F.to_date("drugenddate","yyyyMMdd")))
-        )
+        self.df = clean_date_column(self.df, "drugenddate").withColumnRenamed("drugenddate", "drug_end_date")
 
         map_expr = F.create_map([F.lit(i) for i in sum(self.drug_administration_route_map.items(),())])
 
-        self.df = (
-            self.df
-            .withColumn(
-                "drugadministrationroute",
-                map_expr[F.col("drugadministrationroute")]
-            )
-        )
+        self.df = self.df.withColumn("drugadministrationroute", map_expr[F.col("drugadministrationroute")]).withColumnRenamed("drugadministrationroute", "administration_route")
 
-        # Create drugstructuredosage and normalize to (mg) based on numb and unit
-        self.df = (
-            self.df
-            .withColumn(
-                "drugstructuredosage(mg)",
-                (
-                    F
-                    .when(F.col("drugstructuredosageunit") == "001", F.col("drugstructuredosagenumb") * 1e-6)
-                    .when(F.col("drugstructuredosageunit") == "002", F.col("drugstructuredosagenumb") * 1e-3)
-                    .when(F.col("drugstructuredosageunit") == "003", F.col("drugstructuredosagenumb") * 1)
-                    .when(F.col("drugstructuredosageunit") == "004", F.col("drugstructuredosagenumb") * 10**3)
-                    .otherwise(None)
-                )
+        # Find and replace strings containing the word "Unknown"
+        self.df = self.df.withColumn(
+            "drugindication",
+            F.when(
+                F.col('drugindication').rlike("(?i)Unknown"),
+                F.lit("Unknown")
+            ).otherwise(F.col('drugindication'))
+        ).withColumn(
+            "drugindication",
+            F.regexp_replace("drugindication",r"\^", "'")
+        ).withColumnRenamed("drugindication","drug_indication")
+        
+        # Normalize dosage to mg
+        self.df = self.df.withColumn(
+            "dosage_mg",
+            (
+                F
+                .when(F.col("drugstructuredosageunit") == "001", F.col("drugstructuredosagenumb") * 1e-6)
+                .when(F.col("drugstructuredosageunit") == "002", F.col("drugstructuredosagenumb") * 1e-3)
+                .when(F.col("drugstructuredosageunit") == "003", F.col("drugstructuredosagenumb") * 1)
+                .when(F.col("drugstructuredosageunit") == "004", F.col("drugstructuredosagenumb") * 10**3)
+                .otherwise(None)
             )
-            .drop("drugstructuredosageunit", "drugstructuredosagenumb")
-        )
+        ).drop("drugstructuredosageunit", "drugstructuredosagenumb")
 
-        # Noramlize drugtreatmentduration to days
-        self.df = (
-            self.df
-            .withColumn(
-                "drugtreatmentduration(days)",
-                (
-                    F
-                    .when(F.col("drugtreatmentdurationunit") == "801", F.col("drugtreatmentdurationnumb") * 365.25)
-                    .when(F.col("drugtreatmentdurationunit") == "802", F.col("drugtreatmentdurationnumb") * 30.46)
-                    .when(F.col("drugtreatmentdurationunit") == "803", F.col("drugtreatmentdurationnumb") * 7)
-                    .when(F.col("drugtreatmentdurationunit") == "804", F.col("drugtreatmentdurationnumb") * 1)
-                    .when(F.col("drugtreatmentdurationunit") == "805", F.col("drugtreatmentdurationnumb") / 24)
-                    .when(F.col("drugtreatmentdurationunit") == "806", F.col("drugtreatmentdurationnumb") / 1440)
-                    .otherwise(None)
-                )
+        # Noramlized to days
+        self.df = self.df.withColumn(
+            "treatment_duration_days",
+            (
+                F
+                .when(F.col("drugtreatmentdurationunit") == "801", F.col("drugtreatmentduration") * 365.25)
+                .when(F.col("drugtreatmentdurationunit") == "802", F.col("drugtreatmentduration") * 30.46)
+                .when(F.col("drugtreatmentdurationunit") == "803", F.col("drugtreatmentduration") * 7)
+                .when(F.col("drugtreatmentdurationunit") == "804", F.col("drugtreatmentduration") * 1)
+                .when(F.col("drugtreatmentdurationunit") == "805", F.col("drugtreatmentduration") / 24)
+                .when(F.col("drugtreatmentdurationunit") == "806", F.col("drugtreatmentduration") / 1440)
+                .otherwise(None)
             )
-            .drop("drugtreatmentdurationunit", "drugtreatmentdurationnumb")
-        )
+        ).drop("drugtreatmentdurationunit", "drugtreatmentduration")
+        
 
-        self.df = (
-            self.df
-            .withColumn(
-                "drug_reaction_after_readministration",
-                (
-                    F
-                    .when(F.col("drugrecurreadministration") == 1, "Yes")
-                    .when(F.col("drugrecurreadministration") == 2, "No")
-                    .when(F.col("drugrecurreadministration") == 3, "Unknown")
-                    .otherwise(None)
-                )
+        self.df = self.df.withColumn(
+            "drug_reaction_after_readministration",
+            (
+                F
+                .when(F.col("drugrecurreadministration") == 1, F.lit("Yes"))
+                .when(F.col("drugrecurreadministration") == 2, F.lit("No"))
+                .when(F.col("drugrecurreadministration") == 3, F.lit("Unknown"))
+                .otherwise(None)
             )
-            .drop("drugrecurreadministration")
-        )
+        ).drop("drugrecurreadministration")
+        
 
         self.df = self.df.withColumn(
             "actiondrug",
             (
                 F
-                .when(F.col("actiondrug") == 1, "Drug withdrawn")
-                .when(F.col("actiondrug") == 2, "Dose reduced")
-                .when(F.col("actiondrug") == 3, "Dose increased")
-                .when(F.col("actiondrug") == 4, "Dose not changed")
-                .when(F.col("actiondrug") == 5, "Unknown")
-                .when(F.col("actiondrug") == 6, "Not applicable")
+                .when(F.col("actiondrug") == 1, F.lit("Drug withdrawn"))
+                .when(F.col("actiondrug") == 2, F.lit("Dose reduced"))
+                .when(F.col("actiondrug") == 3, F.lit("Dose increased"))
+                .when(F.col("actiondrug") == 4, F.lit("Dose not changed"))
+                .when(F.col("actiondrug") == 5, F.lit("Unknown"))
+                .when(F.col("actiondrug") == 6, F.lit("Not applicable"))
                 .otherwise(None)
             )
         )
@@ -223,9 +196,43 @@ class Drug:
             "drugcharacterization",
             (
                 F
-                .when(F.col("drugcharacterization") == 1, "Suspect")
-                .when(F.col("drugcharacterization") == 2, "Concomitant ")
-                .when(F.col("drugcharacterization") == 3, "Interacting ")
+                .when(F.col("drugcharacterization") == 1, F.lit("Suspect"))
+                .when(F.col("drugcharacterization") == 2, F.lit("Concomitant"))
+                .when(F.col("drugcharacterization") == 3, F.lit("Interacting"))
                 .otherwise(None)
             )
         )
+
+        # Handle null
+        self.handle_null()
+
+    def handle_null(self):
+        fillna_dict = { 
+            'actiondrug' : 'Unknown',
+            'drugcharacterization': 'Unknown',
+            'medicinalproduct': 'Unknown',
+            'activesubstancename': 'Unknown',
+            'drug_indication': 'Unknown',
+            'administration_route': 'Unknown',
+            # 'drug_start_date': '',
+            # 'drug_end_date': '',
+            'drugdosagetext': 'Not Specified',
+            'dosage_mg': -1.0,
+            'treatment_duration_days': -1,
+            'drug_reaction_after_readministration': 'Unknown',
+
+        }
+
+        self.df = self.df.fillna(fillna_dict)
+    def get_null_count(self):
+        return self.df.select([
+            F.sum(
+                F.when(
+                    F.col(c).isNull(), 1
+                ).otherwise(0)
+            ).alias(c)
+            for c in self.df.columns
+        ]).first().asDict()
+
+    def get_count(self):
+        return self.df.count()

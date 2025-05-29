@@ -3,6 +3,9 @@
 up: ## Spin up spark cluster and jupyter containers
 	make down && docker compose up
 
+up-d: ## Spin up spark cluster and jupyter containers
+	make down && docker compose up -d
+
 down: ## Tear down spark cluster and jupyter containers
 	docker compose down
 
@@ -15,10 +18,10 @@ spark-submit:
 	  zip -r process_raw_layer.zip process_raw_layer -x "*__pycache__*" && \
 	  spark-submit \
 	    --py-files process_raw_layer.zip \
-	    process_raw_layer/main.py --only_years=$(YEARS)'
+	    process_raw_layer/main.py --year=$(YEARS)'
 
 # spark-submit:
 # 	docker exec -i spark-master bash -c 'spark-submit /opt/workspace/$(JOB)'
 
 spark-submit-year:
-	docker exec -i spark-master bash -c 'spark-submit /opt/workspace/$(JOB) --only_years=$(YEARS)'
+	docker exec -i spark-master bash -c 'spark-submit /opt/workspace/jobs/$(JOB) --year=$(YEARS)'

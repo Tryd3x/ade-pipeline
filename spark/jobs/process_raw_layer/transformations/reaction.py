@@ -2,6 +2,12 @@ from pyspark.sql import functions as F
 from pyspark.sql.types import StringType
 
 class Reaction:
+    columns = [
+        'patientid',
+        'reactionmeddrapt',
+        'reactionoutcome'
+    ]
+
     def __init__(self, df):
         self.df = df
         
@@ -33,3 +39,27 @@ class Reaction:
                 ).cast(StringType())
             )
         )
+
+        # Handle null
+        self.handle_null()
+    
+    def handle_null(self):
+        fillna_dict = {
+            'reactionmeddrapt' : 'Unspecified',
+            'reactionoutcome' : 'Unknown',
+        }
+
+        self.df = self.df.fillna(fillna_dict)
+
+    def get_null_count(self):
+        return self.df.select([
+            F.sum(
+                F.when(
+                    F.col(c).isNull(), 1
+                ).otherwise(0)
+            ).alias(c)
+            for c in self.df.columns
+        ]).first().asDict()
+    
+    def get_count(self):
+        return self.df.count()
