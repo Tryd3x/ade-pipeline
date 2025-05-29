@@ -1,6 +1,7 @@
 from prometheus_client import Gauge, CollectorRegistry, push_to_gateway, delete_from_gateway
-from time import time
+from time import time, sleep
 from utilities import get_module_logger
+import threading
 
 logger = get_module_logger(__name__)
 
@@ -18,10 +19,10 @@ class Metrics:
         self.job = job
 
         # Metrics
-        self.record_gauge = Gauge('total_records', 'Total records per table', ['table'], registry=self.registry)
-        self.null_gauge = Gauge('null_count', 'Null count per field', ['table', 'field'], registry=self.registry)
-        self.ratio_gauge = Gauge('null_ratio', 'Null ratio per field', ['table', 'field'], registry=self.registry)
-        self.processing_time = Gauge('batch_processing_time', 'Time taken to process a batch in seconds', registry=self.registry)
+        self.record_gauge = Gauge('total_records', 'Total records per table', ['job','table'], registry=self.registry)
+        self.null_gauge = Gauge('null_count', 'Null count per field', ['job','table', 'field'], registry=self.registry)
+        self.ratio_gauge = Gauge('null_ratio', 'Null ratio per field', ['job','table', 'field'], registry=self.registry)
+        self.processing_time = Gauge('batch_processing_time', 'Time taken to process a batch in seconds', ['job'],registry=self.registry)
 
     def reset(self):
         self.start_time = time()
@@ -62,23 +63,25 @@ class Metrics:
 
         # Update Gauge
         for table, count in self.total_records.items():
-            self.record_gauge.labels(table=table).set(count)
+            self.record_gauge.labels(job=self.job,table=table).set(count)
 
         for table, fields in self.null_count.items():
             for field, count in fields.items():
-                self.null_gauge.labels(table=table, field=field).set(count)
+                self.null_gauge.labels(job=self.job,table=table, field=field).set(count)
 
         for table, fields in self.null_ratio.items():
             for field, ratio in fields.items():
-                self.ratio_gauge.labels(table=table, field=field).set(ratio)
+                self.ratio_gauge.labels(job=self.job,table=table, field=field).set(ratio)
         
-        self.processing_time.set(duration)
+        self.processing_time.labels(job=self.job).set(duration)
 
         logger.info(f"Posting metrics to pushgateway: {self.gateway}")
         push_to_gateway(gateway=self.gateway,job=self.job,registry=self.registry)
 
-    def close(self):
-        self.reset()
-
+    def close(self, delay=15):
         logger.info(f"Clearing Metrics")
-        delete_from_gateway(gateway=self.gateway,job=self.job)
+        def close():
+            sleep(delay)
+            delete_from_gateway(gateway=self.gateway, job=self.job)
+        
+        threading.Thread(target=close).start()

@@ -1,5 +1,4 @@
 import os
-import time
 import shlex
 import requests
 import subprocess
@@ -7,7 +6,6 @@ from time import sleep
 from dotenv import load_dotenv
 from google.cloud import storage
 from argparse import ArgumentParser
-from prometheus_client import start_http_server
 load_dotenv()
 
 from utilities import ADE, Metrics, part_size_mb, partition_id_by_year, read_json_file, get_module_logger, filter_partition
@@ -225,7 +223,8 @@ if __name__ == '__main__':
 
     URL = "https://api.fda.gov/download.json"
     MAX_BATCH_SIZE_MB = int(args.max_batch_size_mb) if args.max_batch_size_mb else 13000
-    PROMETHEUS_GATEWAY = args.metrics_gateway if args.metrics_gateway else None 
+    PROMETHEUS_GATEWAY = args.metrics_gateway if args.metrics_gateway else None
+    JOB = "openfda_ingestion"
 
     logger.info(f"Fetching data: {URL}")
     res = requests.get(URL)
@@ -235,7 +234,7 @@ if __name__ == '__main__':
     downloads_json = extract_drug_events(data)
     partitions = downloads_json.get('partitions')
 
-    metrics = Metrics(job="openfda_ingestion",gateway=PROMETHEUS_GATEWAY)
+    metrics = Metrics(job=JOB, gateway=PROMETHEUS_GATEWAY)
 
     logger.info(f"Metrics gateway: {PROMETHEUS_GATEWAY}")
 
@@ -249,11 +248,8 @@ if __name__ == '__main__':
         logger.info(f"Filtering partition for year: {year}")
         filtered_parititons = filter_partition(year, partitions) 
         logger.info(f"Creating Batches [max_batch_size={MAX_BATCH_SIZE_MB}]")
-        batch, _ = create_batch(
-            filtered_parititons,
-            max_batch_size_mb=MAX_BATCH_SIZE_MB
-            )
+        batch, _ = create_batch(filtered_parititons,max_batch_size_mb=MAX_BATCH_SIZE_MB)
         process_batch(batch, metrics)
     
-    sleep(30)
     metrics.close()
+    
