@@ -1,6 +1,9 @@
 networks:
   monitor-network:
     name: monitor-network
+  shared_network:
+    name: shared_network
+    external : true
 
 services:
   prometheus:
@@ -12,6 +15,7 @@ services:
       - ./volume/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     networks:
       - monitor-network
+      - shared_network
     depends_on:
       pushgateway:
         condition: service_started
@@ -23,12 +27,14 @@ services:
       - "9091:9091"
     networks:
       - monitor-network
+      - shared_network
   
   grafana:
     container_name: grafana
     image: grafana/grafana
     networks:
-    - monitor-network
+      - monitor-network
+      - shared_network
     ports:
       - 3000:3000
     volumes:
@@ -42,7 +48,8 @@ services:
     networks:
       - monitor-network
     command: >
-      --year=2004,2005,2006,2007,2008,2009 --max_batch_size=2000 
+      --year=2004,2005,2006,2007,2008,2009
+      --max_batch_size_mb=2000 
       --metrics_gateway=pushgateway:9091
     ports:
       - "8000:8000"
