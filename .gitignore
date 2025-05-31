@@ -2,6 +2,7 @@
 /*-env
 **/venv/*
 *-venv
+venv-*
 
 # Ignore Credential files
 .env
