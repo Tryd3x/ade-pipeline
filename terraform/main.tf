@@ -13,24 +13,14 @@ provider "google" {
   region      = var.region
 }
 
-resource "google_storage_bucket" "ade-pipeline" {
-  name          = var.gcs_bucket_name
-  location      = var.region
-  force_destroy = true
-
-  lifecycle_rule {
-    condition {
-      age = 1
-    }
-
-    action {
-      type = "AbortIncompleteMultipartUpload"
-    }
-  }
+module "ade_bucket" {
+	source = "./modules/storage"
+	gcs_bucket_name = var.gcs_bucket_name
+	region = var.region 
 }
 
-resource "google_bigquery_dataset" "ade_dataset_staging" {
-  dataset_id                 = "ade_dataset_staging"
-  location                   = var.region
-  delete_contents_on_destroy = true
+# Initializes `ade_external_staging` and `ade_core`
+module "ade_bq_dataset" {
+	source = "./modules/bigquery"
+	region = var.region
 }

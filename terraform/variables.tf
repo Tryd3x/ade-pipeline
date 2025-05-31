@@ -28,11 +28,11 @@ variable "gcs_log_bucket_name" {
   default     = "zoomcamp-454219-ade-pipeline-logs"
 }
 
-variable "labels" {
-  description = "Tags for filter purposes"
-  default = {
-    environmnet = "dev"
-    project     = "ade-pipeline"
-  }
+# variable "labels" {
+#   description = "Tags for filter purposes"
+#   default = {
+#     environmnet = "dev"
+#     project     = "ade-pipeline"
+#   }
 
-}
+# }
