@@ -33,8 +33,15 @@ PROMETHEUS_GATEWAY = "pushgateway:9091"
 
 for dir in dirs:
     schema = dir.split('/')[-1]
-
     metrics = Metrics(schema=schema, job=JOB, gateway=PROMETHEUS_GATEWAY)
+
+    params = {
+        "spark" : spark,
+        "bucket" : bucket,
+        "schema" : schema,
+        "dir" : dir,
+        "metrics" : metrics
+    }
 
     if not args.year:
         years = scan_years(list(bucket.list_blobs(prefix=dir)))
@@ -44,7 +51,7 @@ for dir in dirs:
 
     for year in years:
         metrics.reset()
-        process_parquet(spark, bucket, schema, dir, year, metrics)
+        process_parquet(params, year, dedup_strategy="row_hash")
         metrics.publish()
 
     print(f"Performing threaded deletion for gateway: {schema}")

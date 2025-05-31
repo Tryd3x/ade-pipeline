@@ -1,4 +1,5 @@
 from transformations import patient, drug, reaction
+from pyspark.sql import functions as F
 
 def get_year(blob):
     return blob.name.split("/")[3]
@@ -9,7 +10,12 @@ def get_filename(blob):
 def scan_years(blobs): 
     return list({get_year(blob) for blob in blobs})
 
-def process_parquet(spark, bucket, schema, dir, year, metrics):
+def process_parquet(params, year, dedup_strategy = "row_hash"):
+
+    spark = params['spark']
+    bucket = params['bucket']
+    schema = params['schema']
+    metrics = params['metrics']
     schema_classes = {
         'patient' : patient.Patient,
         'drug' : drug.Drug,
@@ -20,7 +26,7 @@ def process_parquet(spark, bucket, schema, dir, year, metrics):
 
     for blob in blobs:
         source_blob = f"gs://{bucket.name}/{blob.name}"
-        destination_blob = f"gs://{bucket.name}/cleaned/pq/{schema}/{year}/{get_filename(blob)}"
+        destination_blob = f"gs://{bucket.name}/cleaned/pq/{schema}/{year}/"
 
         print(f"Reading file {source_blob}")
         df = spark.read.parquet(source_blob)
@@ -31,7 +37,13 @@ def process_parquet(spark, bucket, schema, dir, year, metrics):
 
         df = obj.get_df()
         metrics.update(obj)
+
+        if dedup_strategy == 'row_hash':
+            df = df.withColumns("_dedup_key", F.sha2(F.concat_ws("||"),256))
+            df = df.dropDuplicates(["_dedup_key"]).drop("_dedup_key")
+        elif dedup_strategy == 'col_key' and 'patientid' in df.columns:
+            df = df.dropDuplicates(["patientid"])
         
         # Write to Destination
-        df.repartition(4).write.mode("overwrite").parquet(destination_blob)
+        df.repartition(4).write.mode("append").parquet(destination_blob)
         print(f"Saved to {destination_blob}")
