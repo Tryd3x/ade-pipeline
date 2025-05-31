@@ -3,6 +3,8 @@ x-common:
   volumes: 
   - /var/run/docker.sock:/var/run/docker.sock
   - /home/hyderreza/codehub/ade-pipeline/spark/jobs:/usr/local/jobs
+  - /home/hyderreza/codehub/ade-pipeline/keys/gcs-credentials.json:/keys/gcs-credentials.json:ro
+  
   networks:
     - shared_network
 
