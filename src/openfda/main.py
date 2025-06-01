@@ -143,7 +143,8 @@ def process_batch(batch, metrics):
         for j,p in enumerate(b):
             logger.info(f'----------------- Processing partition {j+1} -----------------')  
 
-            files = p.get('files')
+            year = p.get('partition_id')
+            files = p.get('files')      
             total_count = p.get('count')
             file_count = 1
 
@@ -164,7 +165,7 @@ def process_batch(batch, metrics):
                     logger.info(f"File saved to: {dl_filepath}")
 
                     # Load JSON and map to class ADE
-                    ade = ADE()
+                    ade = ADE(year)
                     temp_json = read_json_file(dl_filepath)
                     ade.extractJSON(temp_json)
 

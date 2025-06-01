@@ -10,6 +10,7 @@ class ADE:
     # Patient information
     patient_header = [
         "patientid",
+        "recordyear",
         "patientagegroup",
         "patientonsetage",
         "patientonsetageunit",
@@ -35,6 +36,7 @@ class ADE:
     # Drug information
     drug_header = [
         "patientid",
+        "recordyear",
         "actiondrug",                                     
         "drugcharacterization",                           
         "medicinalproduct",
@@ -54,11 +56,13 @@ class ADE:
     # Reaction information
     reaction_header = [
         "patientid",
+        "recordyear",
         "reactionmeddrapt",
         "reactionoutcome",
     ]
 
-    def __init__(self):
+    def __init__(self, year):
+        self.year = year
         self.patients_list = []
         self.drugs_list = []
         self.reactions_list = []
@@ -71,6 +75,7 @@ class ADE:
 
             self.patients_list.append((
                 patientid,
+                self.year,
                 patient.get("patientagegroup"),
                 patient.get("patientonsetage"),
                 patient.get("patientonsetageunit"),
@@ -97,6 +102,7 @@ class ADE:
             for drug in drugs:
                 self.drugs_list.append((
                     patientid,
+                    self.year,
                     drug.get("actiondrug"),                                     # Added
                     drug.get("drugcharacterization"),                           # Added
                     
@@ -119,6 +125,7 @@ class ADE:
             for reaction in reactions:
                 self.reactions_list.append((
                     patientid,
+                    self.year,
                     reaction.get("reactionmeddrapt"),
                     reaction.get("reactionoutcome"),
                 ))

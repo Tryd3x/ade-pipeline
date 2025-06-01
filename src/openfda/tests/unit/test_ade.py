@@ -2,7 +2,7 @@ import os
 from utilities import ADE
 
 def test_extractJSON_valid(load_mock_json):
-    ade = ADE()
+    ade = ADE(year=0)
     ade.extractJSON(load_mock_json)
     
     # Assert attributes
@@ -17,7 +17,7 @@ def test_extractJSON_valid(load_mock_json):
     assert ade.reactions_list != [] # Non-empty
 
 def test_extractJSON_empty():
-    ade = ADE()
+    ade = ADE(year=0)
     ade.extractJSON({'results': []})
 
     assert ade.patients_list == []
@@ -25,7 +25,7 @@ def test_extractJSON_empty():
     assert ade.reactions_list == []
 
 def test_dataframe_structure(load_mock_json):
-    ade = ADE()
+    ade = ADE(year=0)
     ade.extractJSON(load_mock_json)
     df_pat, df_drug, df_reac = ade._to_dataframe()
 
@@ -40,7 +40,7 @@ def test_dataframe_structure(load_mock_json):
     assert len(df_reac) > 0
 
 def test_save_as_parquet(tmp_path,load_mock_json):
-    ade = ADE()
+    ade = ADE(year=0)
     ade.extractJSON(load_mock_json)
 
     original_cwd = os.getcwd()

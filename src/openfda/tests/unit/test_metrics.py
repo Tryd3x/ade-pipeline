@@ -4,7 +4,7 @@ from utilities import Metrics, ADE
 # - Empty JSON
 # - Valid JSON
 def test_update_valid(load_mock_json):
-    ade = ADE()
+    ade = ADE(year=0)
     ade.extractJSON(load_mock_json)
 
     metric = Metrics(job="test",gateway=None)
@@ -29,7 +29,7 @@ def test_update_valid(load_mock_json):
             assert metric.null_ratio[s][k] >= 0 and metric.null_ratio[s][k] <= 1 , "Null ratio must be between 0 and 1"
 
 def test_update_empty():
-    ade = ADE()
+    ade = ADE(year=0)
     ade.extractJSON({"results" : []})
 
     metric = Metrics(job="test",gateway=None)
@@ -55,7 +55,7 @@ def test_update_empty():
 
 
 def test_reset(load_mock_json):
-    ade = ADE()
+    ade = ADE(year=0)
     ade.extractJSON(load_mock_json)
 
     metric = Metrics(job="test",gateway=None)
