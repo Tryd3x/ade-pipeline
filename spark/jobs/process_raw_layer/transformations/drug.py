@@ -5,6 +5,7 @@ from .helper import clean_date_column
 class Drug:
     columns = [
         'patientid',
+        'recordyear',
         'actiondrug',
         'drugcharacterization',
         'medicinalproduct',
@@ -99,6 +100,7 @@ class Drug:
         self.df = (
             self.df
             .withColumn("patientid", F.col("patientid").cast(StringType()))
+            .withColumn("recordyear", F.col("recordyear").cast(IntegerType()))
             .withColumn("medicinalproduct", F.col("medicinalproduct").cast(StringType()))
             .withColumn("activesubstancename", F.col("activesubstancename").cast(StringType()))
             .withColumn("drugindication", F.col("drugindication").cast(StringType()))

@@ -1,9 +1,10 @@
 from pyspark.sql import functions as F
-from pyspark.sql.types import StringType
+from pyspark.sql.types import StringType, IntegerType
 
 class Reaction:
     columns = [
         'patientid',
+        'recordyear',
         'reactionmeddrapt',
         'reactionoutcome'
     ]
@@ -18,6 +19,7 @@ class Reaction:
         self.df = (
             self.df
             .withColumn("patientid", F.col("patientid").cast(StringType()))
+            .withColumn("recordyear", F.col("recordyear").cast(IntegerType()))
             .withColumn("reactionmeddrapt", F.col("reactionmeddrapt").cast(StringType()))
             .withColumn("reactionoutcome", F.col("reactionoutcome").cast(StringType()))
         )

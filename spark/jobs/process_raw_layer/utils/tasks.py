@@ -17,6 +17,7 @@ def process_parquet(params, year, dedup_strategy = "row_hash"):
     schema = params['schema']
     dir = params['dir']
     metrics = params['metrics']
+
     schema_classes = {
         'patient' : patient.Patient,
         'drug' : drug.Drug,
@@ -40,7 +41,7 @@ def process_parquet(params, year, dedup_strategy = "row_hash"):
         metrics.update(obj)
 
         if dedup_strategy == 'row_hash':
-            df = df.withColumn("_dedup_key", F.sha2(F.concat_ws("||"),256))
+            df = df.withColumn("_dedup_key", F.sha2(F.concat_ws("||", *df.columns), 256))
             df = df.dropDuplicates(["_dedup_key"]).drop("_dedup_key")
         elif dedup_strategy == 'col_key' and 'patientid' in df.columns:
             df = df.dropDuplicates(["patientid"])

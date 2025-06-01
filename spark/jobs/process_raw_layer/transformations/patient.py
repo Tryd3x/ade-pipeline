@@ -5,6 +5,7 @@ from .helper import clean_date_column
 class Patient:
     columns = [
         'patientid',
+        'recordyear',
         'age_group',
         'sex',
         'weight',
@@ -58,6 +59,7 @@ class Patient:
         self.df = (
             self.df
             .withColumn("patientid", F.col("patientid").cast(StringType()))
+            .withColumn("recordyear", F.col("recordyear").cast(IntegerType()))
             .withColumn("patientagegroup", F.col("patientagegroup").cast(IntegerType()))
             .withColumn("patientonsetage", F.col("patientonsetage").cast(IntegerType()))
             .withColumn("patientonsetageunit", F.col("patientonsetageunit").cast(IntegerType()))

@@ -89,3 +89,13 @@ services:
     container_name: spark-worker-4
     ports:
       - 9084:8081
+  worker-5:
+    <<: *worker-common
+    container_name: spark-worker-5
+    ports:
+      - 9085:8081
+  worker-6:
+    <<: *worker-common
+    container_name: spark-worker-6
+    ports:
+      - 9086:8081
