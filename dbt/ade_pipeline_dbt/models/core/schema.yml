@@ -1,0 +1,8 @@
+models:
+  - name: patient_drug_reactions
+    description: "Records of patients with reactions to certain drugs"
+  - name: patient_drug
+    description: "Records of patients with prescribed drugs"
+  - name: patient_reaction
+    description: "Records of patients and their reactions"
+

@@ -1,0 +1,20 @@
+version: 2
+sources:
+  - name: external
+    database: zoomcamp-454219     # data source in bigq
+    schema: ade_external          # dataset in data source
+    tables:
+      - name: ext_patient
+        description: "External table for patient"
+      - name: ext_drug
+        description: "External table for drug"
+      - name: ext_reaction
+        description: "External table for reaction"
+
+models:
+  - name: stg_patient
+    description: "Staging table for patient"
+  - name: stg_drug
+    description: "Staging table for drug"
+  - name: stg_reaction
+    description: "Staging table for reaction"

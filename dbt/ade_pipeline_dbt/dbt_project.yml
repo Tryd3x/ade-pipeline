@@ -32,10 +32,13 @@ clean-targets:         # directories to be removed by `dbt clean`
 models:
   ade_pipeline_dbt:
     staging:
-      +schema: external_staging
+      +schema: staging
       +materialized: view
     core:
       +schema: core
+      +materialized: "{{ 'table' if target.name == 'prod' else 'view' }}"
+    marts:
+      +schema: marts
       +materialized: view
 
 
