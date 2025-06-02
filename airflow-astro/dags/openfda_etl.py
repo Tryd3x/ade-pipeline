@@ -14,6 +14,10 @@ from docker.types import Mount
 from google.cloud import storage, bigquery
 
 logger = LoggingMixin().log
+params = {
+    "year" : Param("", type="string", description="Enter years seperated by ',' to perform ETL on"),
+    "max_batch_size_mb" : Param(13000, type="integer", description="Enter maximum size of each batch in MB")
+}
 
 # Helper functions
 def get_year(blob):
@@ -25,12 +29,9 @@ def scan_years(blobs):
 def update_uris(bucket, schema, years):
     return list(f"gs://{bucket}/cleaned/pq/{schema}/{year}/*.parquet" for year in years)
 
-params = {
-    "year" : Param("", type="string", description="Enter years seperated by ',' to perform ETL on")
-}
 
 BUCKET_NAME = "zoomcamp-454219-ade-pipeline"
-DATASET_ID = "ade_external_staging"
+DATASET_ID = "ade_external"
 SCHEMA = ['patient', 'reaction', 'drug']
 
 def update_external_table_uris():
@@ -92,7 +93,7 @@ with DAG(
         environment={
             "GOOGLE_APPLICATION_CREDENTIALS": "/app/gcs-credentials.json"
         },
-        command="--year={{ params.year }} --metrics_gateway=pushgateway:9091"
+        command="--year={{ params.year }} --metrics_gateway=pushgateway:9091 --max_batch_size_mb={{ params.max_batch_size_mb }}"
     )
 
     transform = LivyOperator(
