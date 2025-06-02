@@ -19,7 +19,7 @@ class Reaction:
         self.df = (
             self.df
             .withColumn("patientid", F.col("patientid").cast(StringType()))
-            .withColumn("recordyear", F.col("recordyear").cast(IntegerType()))
+            .withColumn("recordyear", F.col("recordyear").cast(StringType()))
             .withColumn("reactionmeddrapt", F.col("reactionmeddrapt").cast(StringType()))
             .withColumn("reactionoutcome", F.col("reactionoutcome").cast(StringType()))
         )

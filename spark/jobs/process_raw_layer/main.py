@@ -10,9 +10,16 @@ spark = (
     .builder
     .master(SPARK_MASTER)
     .appName("process_type_mismatch")
-    # .config("spark.jars", "https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-hadoop3-2.2.14.jar") # GCS Connector
+    .config("spark.jars", "https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-hadoop3-2.2.14.jar") # GCS Connector
+    # .config("spark.jars", "/home/hyderreza/codehub/ade-pipeline/spark/jobs/process_raw_layer/gcs-connector-hadoop3-2.2.14.jar") # Local GCS Connector
     .getOrCreate()
 )
+
+conf = spark.sparkContext.getConf()
+
+print("Executor Memory:", conf.get("spark.executor.memory"))
+print("Executor Cores:", conf.get("spark.executor.cores"))
+print("Executor Memory Overhead:", conf.get("spark.executor.memoryOverhead"))
 
 # Google Cloud Service Account Credentials
 spark._jsc.hadoopConfiguration().set("google.cloud.auth.service.account.json.keyfile",os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"))
@@ -21,7 +28,7 @@ client = storage.Client()
 bucket = client.get_bucket("zoomcamp-454219-ade-pipeline")
 dirs = ["data/pq/patient", "data/pq/drug", "data/pq/reaction"]
 
-parser = argparse.ArgumentParser(description="Spark job to fix mixed datatype")
+parser = argparse.ArgumentParser(description="Spark job for transformation")
 
 parser.add_argument("--year", help="List of years to perform the job on")
 

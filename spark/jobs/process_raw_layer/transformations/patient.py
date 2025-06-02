@@ -59,7 +59,7 @@ class Patient:
         self.df = (
             self.df
             .withColumn("patientid", F.col("patientid").cast(StringType()))
-            .withColumn("recordyear", F.col("recordyear").cast(IntegerType()))
+            .withColumn("recordyear", F.col("recordyear").cast(StringType()))
             .withColumn("patientagegroup", F.col("patientagegroup").cast(IntegerType()))
             .withColumn("patientonsetage", F.col("patientonsetage").cast(IntegerType()))
             .withColumn("patientonsetageunit", F.col("patientonsetageunit").cast(IntegerType()))

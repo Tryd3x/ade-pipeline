@@ -19,7 +19,7 @@ class Metrics:
         self.record_gauge = Gauge('total_records', 'Total records', ['job','schema'], registry=self.registry)
         self.null_gauge = Gauge('null_count', 'Null count per field', ['job','schema','field'], registry=self.registry)
         self.ratio_gauge = Gauge('null_ratio', 'Null ratio per field', ['job','schema','field'], registry=self.registry)
-        self.processing_time = Gauge('batch_processing_time', 'Time taken to process a batch in seconds', ['job'], registry=self.registry)
+        self.processing_time = Gauge('batch_processing_time', 'Time taken to process a batch in seconds', ['job', 'schema'], registry=self.registry)
 
     def reset(self):
         self.start_time = time()
@@ -44,7 +44,7 @@ class Metrics:
 
         self.record_gauge.labels(job=self.job, schema=self.schema).set(self.total_records)
         duration = time() - self.start_time
-        self.processing_time.labels(job=self.job).set(duration)
+        self.processing_time.labels(job=self.job, schema=self.schema).set(duration)
         
         for field, count in self.null_count.items():
             self.null_gauge.labels(job=self.job, schema=self.schema, field=field).set(count)

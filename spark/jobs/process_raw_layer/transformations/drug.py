@@ -1,4 +1,4 @@
-from pyspark.sql.types import StringType, FloatType, IntegerType
+from pyspark.sql.types import StringType, FloatType, IntegerType, LongType
 from pyspark.sql import functions as F
 from .helper import clean_date_column
 
@@ -100,7 +100,7 @@ class Drug:
         self.df = (
             self.df
             .withColumn("patientid", F.col("patientid").cast(StringType()))
-            .withColumn("recordyear", F.col("recordyear").cast(IntegerType()))
+            .withColumn("recordyear", F.col("recordyear").cast(StringType()))
             .withColumn("medicinalproduct", F.col("medicinalproduct").cast(StringType()))
             .withColumn("activesubstancename", F.col("activesubstancename").cast(StringType()))
             .withColumn("drugindication", F.col("drugindication").cast(StringType()))
@@ -144,10 +144,10 @@ class Drug:
             "dosage_mg",
             (
                 F
-                .when(F.col("drugstructuredosageunit") == "001", F.col("drugstructuredosagenumb") * 1e-6)
-                .when(F.col("drugstructuredosageunit") == "002", F.col("drugstructuredosagenumb") * 1e-3)
+                .when(F.col("drugstructuredosageunit") == "001", F.col("drugstructuredosagenumb") * 1e6)
+                .when(F.col("drugstructuredosageunit") == "002", F.col("drugstructuredosagenumb") * 1e3)
                 .when(F.col("drugstructuredosageunit") == "003", F.col("drugstructuredosagenumb") * 1)
-                .when(F.col("drugstructuredosageunit") == "004", F.col("drugstructuredosagenumb") * 10**3)
+                .when(F.col("drugstructuredosageunit") == "004", F.col("drugstructuredosagenumb") * 1e-3)
                 .otherwise(None)
             )
         ).drop("drugstructuredosageunit", "drugstructuredosagenumb")
