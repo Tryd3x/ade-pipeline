@@ -23,6 +23,9 @@ The final output helps stakeholders answer critical questions about drug-related
 
 - Which medications are most frequently associated with serious adverse events in patients over 65?
 - What types of events (e.g., hospitalization, disability, death) are most common in older adults taking specific drugs?
+- What type of events are most common in older adults over the years?
+- What drugs have caused reactions after readministration? 
+
 - Are there patterns or trends in ADEs over time that suggest worsening safety profiles?
 - Which age sub-groups (e.g., 65–70, 71–80, 81+) are most at risk?
 - What drug combinations are disproportionately represented in adverse event reports?
