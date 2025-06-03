@@ -7,7 +7,6 @@ from airflow.utils.log.logging_mixin import LoggingMixin
 from airflow.providers.docker.operators.docker import DockerOperator
 from airflow.providers.apache.livy.operators.livy import LivyOperator
 from airflow.operators.python import PythonOperator
-# from airflow.providers.ssh.operators.ssh import SSHOperator
 
 from docker.types import Mount
 
@@ -105,9 +104,29 @@ with DAG(
         polling_interval=5,   
     )
 
-    sync = PythonOperator(
+    sync_bq = PythonOperator(
         task_id="sync_bq_external_tables",
         python_callable=update_external_table_uris,
     )
 
-    ingest >> transform >> sync
+    build_dbt = DockerOperator(
+        task_id="build_dbt_models",
+        container_name="ade-dbt",
+        image="dbt-base:latest",
+        docker_url="unix:///var/run/docker.sock",
+        auto_remove="success",
+        network_mode="shared_network",
+        mounts=[
+            Mount(source="/home/hyderreza/codehub/ade-pipeline/dbt/volumes/ade_pipeline_dbt",target='/opt/dbt',type='bind'), # dbt project
+            Mount(source='/home/hyderreza/codehub/ade-pipeline/dbt/volumes/dbt_profiles',target='/root/.dbt',type='bind'), # dbt profile
+            Mount(source='/home/hyderreza/codehub/ade-pipeline/keys/gcs-credentials.json',target='/app/gcs-credentials.json',type='bind',read_only=True) # gcs service account credentials
+        ],
+        command=[
+            "run",
+            "--profiles-dir", "/root/.dbt",
+            "--project-dir", "/opt/dbt",
+            "--full-refresh"
+        ]
+    )
+
+    ingest >> transform >> sync_bq >> build_dbt
