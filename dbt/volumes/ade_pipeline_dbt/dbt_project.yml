@@ -39,6 +39,6 @@ models:
       +materialized: "{{ 'table' if target.name == 'prod' else 'view' }}"
     marts:
       +schema: marts
-      +materialized: view
+      +materialized: "{{ 'table' if target.name == 'prod' else 'view' }}"
 
 

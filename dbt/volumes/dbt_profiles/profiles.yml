@@ -1,0 +1,24 @@
+# WARNING: Only for dbt container's profile.yml not the host's profile.yml
+
+ade_pipeline:
+  outputs:
+    dev:
+      dataset: ade_dev
+      keyfile: /app/gcs-credentials.json
+      location: us-central1
+      method: service-account
+      priority: interactive
+      project: zoomcamp-454219
+      threads: 6
+      type: bigquery
+
+    prod:
+      dataset: ade
+      keyfile: /app/gcs-credentials.json
+      location: us-central1
+      method: service-account
+      priority: interactive
+      project: zoomcamp-454219
+      threads: 6
+      type: bigquery
+  target: prod
