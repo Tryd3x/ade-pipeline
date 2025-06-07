@@ -10,10 +10,11 @@ def generate_openfda_urls(year, total_files) -> list:
     return files
 
 # Configure so you know expected results
-def generate_openfda_partition(year, count, size_mb):
+def generate_openfda_partition(year, records, count, size_mb):
     """ Sample data generator for drug event json for batch handling"""
     return {
         'partition_id' : str(year),
+        'records' : int(records),
         'count' : count,
         'size_mb' : round(size_mb,2),
         'files' : generate_openfda_urls(year, count)
@@ -46,14 +47,17 @@ def create_drug_events_json(total_records=65000, partition_config=None):
 
     # Default partition config
     if not partition_config:
+        total_records = 20
         partition_config = [{
             'partition_id' : '2012',
+            'records' : 20,
             'count' : 2,
             'size_mb' : 85.0,
+            'files' : generate_openfda_urls(year=2012, total_files=2)
         }]
 
     partitions = [
-        generate_openfda_partition(year=p['partition_id'],count=p['count'],size_mb=p['size_mb']) 
+        generate_openfda_partition(year=p['partition_id'], records=p['records'], count=p['count'],size_mb=p['size_mb']) 
         for p in partition_config
         ]
 
@@ -71,7 +75,8 @@ def generate_mock_download_json(total_records=12000,partition_config=None):
     #     'total_records' : 12000,
     #     'partitions' : {'display_name': '2016 Q4 (part 11 of 23)',
     #                     'file': 'https://download.open.fda.gov/drug/event/2016q4/drug-event-0011-of-0023.json.zip',
-    #                     'size_mb': '9.78'
+    #                     'size_mb': '9.78',
+    #                     'records': 552
     #                     }
     # }
 
@@ -79,6 +84,7 @@ def generate_mock_download_json(total_records=12000,partition_config=None):
         {
             'display_name' : p['display_name'],
             'size_mb' : p['size_mb'],
+            'records' : p['records'],
             'file' : generate_openfda_urls(partition_id_by_year(p),total_files=1)[0]
         }
         for p in partition_config

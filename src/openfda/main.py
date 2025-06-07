@@ -37,6 +37,7 @@ def extract_drug_events(json):
         file_list = []
         counter = 0
         tot_size = 0
+        records = 0
 
         for p in partitions:
             if counter == count:
@@ -45,10 +46,12 @@ def extract_drug_events(json):
                 counter+=1
                 file_list.append(p.get('file'))
                 tot_size+=part_size_mb(p)
-                
+                records+=p.get('records')
+
         results.append(
             {
                 "partition_id": id,
+                "records" : records,
                 "count": count,
                 "size_mb" : round(tot_size,2),
                 "files" : file_list
@@ -119,6 +122,13 @@ def upload_to_gcs(local_base_dir, bucket_name, gcs_prefix):
                 logger.info(f"Uploaded {local_file_path} to gs://{bucket_name}/{gcs_blob_path}")
 
 def process_batch(batch, metrics):
+    """
+    TODO
+    - Check if year exists in the bucket
+    - Check if existing year in the bucket requires update or not (Might need to use metadata?)
+    """
+
+
     logger.info("Initiating Batch Processing")
 
     # Create temp directories
