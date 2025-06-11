@@ -40,17 +40,18 @@ def test_dataframe_structure(load_mock_json):
     assert len(df_reac) > 0
 
 def test_save_as_parquet(tmp_path,load_mock_json):
-    ade = ADE(year=0)
+    year = 0
+    ade = ADE(year=year)
     ade.extractJSON(load_mock_json)
 
     original_cwd = os.getcwd()
     try:
         os.chdir(tmp_path)
-        ade.save_as_parquet(save_to=tmp_path,fname="testfile",subfolder='year')
+        ade.save_as_parquet(save_to=tmp_path, fname="testfile")
         expected_files = [
-            tmp_path / "patient" / "year" / "testfile.parquet",
-            tmp_path / "drug" / "year" / "testfile.parquet",
-            tmp_path / "reaction" / "year" / "testfile.parquet",
+            tmp_path / "patient" / f"{year}" / "testfile.parquet",
+            tmp_path / "drug" / f"{year}" / "testfile.parquet",
+            tmp_path / "reaction" / f"{year}" / "testfile.parquet",
         ]
 
         for f in expected_files:

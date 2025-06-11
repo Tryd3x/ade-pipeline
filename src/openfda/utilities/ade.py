@@ -1,13 +1,14 @@
 """Adverse Drug Event"""
 import os
 import uuid
+import hashlib
 import pandas as pd
 from utilities import get_module_logger
 
 logger = get_module_logger(__name__)
 
 class ADE:
-    # Patient information
+    # Patient columns
     patient_header = [
         "patientid",
         "recordyear",
@@ -33,7 +34,7 @@ class ADE:
         "seriousnessother",
     ]
 
-    # Drug information
+    # Drug columns
     drug_header = [
         "patientid",
         "recordyear",
@@ -53,7 +54,7 @@ class ADE:
         "drugrecurreadministration",
     ]
 
-    # Reaction information
+    # Reaction columns
     reaction_header = [
         "patientid",
         "recordyear",
@@ -129,22 +130,52 @@ class ADE:
                     reaction.get("reactionmeddrapt"),
                     reaction.get("reactionoutcome"),
                 ))
+                
+    def row_count(self,):
+        df_p, df_d, df_r = self._to_dataframe()
+        return df_p.shape[0], df_d.shape[0], df_r.shape[0]
+                
+    def _row_hash(self, df, cols_to_hash):
+        df_subset = df[cols_to_hash].fillna("null").astype(str).apply(lambda col: col.str.lower())
+        concatenated = df_subset.agg('|'.join, axis=1)
+        df['row_hash'] = [hashlib.sha256(s.encode()).hexdigest() for s in concatenated]
 
-    def _to_dataframe(self):
-        df_patients = pd.DataFrame(self.patients_list, columns=self.patient_header)
-        df_drugs = pd.DataFrame(self.drugs_list, columns=self.drug_header)
-        df_reactions = pd.DataFrame(self.reactions_list, columns=self.reaction_header)
+        return df
+    
+    def _content_hash(self, df):
+        row_hashes = df['row_hash'].sort_values().to_list()
+        compound = "".join(row_hashes)
+        
+        return hashlib.sha256(compound.encode()).hexdigest()
+    
+    def get_hash(self):
+        df_patient, df_drug, df_reaction  = self._to_dataframe(row_hash=True)
+        patient_hash = self._content_hash(df_patient)
+        drug_hash = self._content_hash(df_drug)
+        reaction_hash = self._content_hash(df_reaction)
 
-        return df_patients, df_drugs, df_reactions
+        return patient_hash, drug_hash, reaction_hash
 
-    def save_as_parquet(self, save_to, fname, subfolder):
-        df_patients, df_drugs, df_reactions = self._to_dataframe()
+    def _to_dataframe(self, row_hash = False):
+        df_patient = pd.DataFrame(self.patients_list, columns=self.patient_header)
+        df_drug = pd.DataFrame(self.drugs_list, columns=self.drug_header)
+        df_reaction = pd.DataFrame(self.reactions_list, columns=self.reaction_header)
+
+        if row_hash:
+            df_patient = self._row_hash(df_patient, sorted(self.patient_header[1:]))
+            df_drug = self._row_hash(df_drug, sorted(self.drug_header[1:]) )
+            df_reaction = self._row_hash(df_reaction, sorted(self.reaction_header[1:]))
+        
+        return df_patient, df_drug, df_reaction
+
+    def save_as_parquet(self, save_to, fname):
+        df_patients, df_drugs, df_reactions = self._to_dataframe(row_hash=True)
         df = [df_patients, df_drugs, df_reactions]
 
         dirs = []
 
         for p in ["patient", "drug", "reaction"]:
-            path = os.path.join(save_to, p, subfolder)
+            path = os.path.join(save_to, p, str(self.year))
             dirs.append(path)
             if not os.path.exists(path):
                 logger.info(f"Directory '{path}' missing. Created '{path}'")

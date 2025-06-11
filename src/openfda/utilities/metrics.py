@@ -1,7 +1,8 @@
-from prometheus_client import Gauge, CollectorRegistry, push_to_gateway, delete_from_gateway
-from time import time, sleep
-from utilities import get_module_logger
 import threading
+from time import time, sleep
+from urllib.error import URLError 
+from utilities import get_module_logger
+from prometheus_client import Gauge, CollectorRegistry, push_to_gateway, delete_from_gateway
 
 logger = get_module_logger(__name__)
 
@@ -76,12 +77,18 @@ class Metrics:
         self.processing_time.labels(job=self.job).set(duration)
 
         logger.info(f"Posting metrics to pushgateway: {self.gateway}")
-        push_to_gateway(gateway=self.gateway,job=self.job,registry=self.registry)
+        try:
+            push_to_gateway(gateway=self.gateway,job=self.job,registry=self.registry)
+        except URLError:
+            logger.warning(f"Failed to push metrics to gateway: {self.gateway}")
 
     def close(self, delay=15):
         logger.info(f"Clearing Metrics")
         def close():
             sleep(delay)
-            delete_from_gateway(gateway=self.gateway, job=self.job)
+            try:
+                delete_from_gateway(gateway=self.gateway, job=self.job)
+            except URLError:
+                logger.warning(f"Failed to delete metrics at gateway: {self.gateway}")
         
         threading.Thread(target=close).start()

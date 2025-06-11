@@ -1,16 +1,26 @@
+import json
 import os
 import shlex
 import requests
 import subprocess
-from time import sleep
+from time import time
 from dotenv import load_dotenv
 from google.cloud import storage
 from argparse import ArgumentParser
+from datetime import datetime, timezone
 load_dotenv()
 
 from utilities import ADE, Metrics, part_size_mb, partition_id_by_year, read_json_file, get_module_logger, filter_partition
 
 logger = get_module_logger(__name__)
+
+def benchmark(function):
+    def wrapper(*args, **kwargs):
+        start = time()
+        function(*args, **kwargs)
+        end = time()
+        print(f"Finished in {end-start:.2f} seconds")
+    return wrapper
 
 def extract_drug_events(json):
     """Restructures JSON object to handle batch processing better"""
@@ -112,23 +122,109 @@ def upload_to_gcs(local_base_dir, bucket_name, gcs_prefix):
 
     for root, _, files in os.walk(local_base_dir):
         for file in sorted(files):
-            if file.endswith(".parquet"):
-                local_file_path = os.path.join(root, file)
-                relative_path = os.path.relpath(local_file_path, local_base_dir)
-                gcs_blob_path = os.path.join(gcs_prefix, relative_path).replace("\\", "/")
-                blob = bucket.blob(gcs_blob_path)
-                blob.upload_from_filename(local_file_path)
-                
-                logger.info(f"Uploaded {local_file_path} to gs://{bucket_name}/{gcs_blob_path}")
+            local_file_path = os.path.join(root, file)
+            relative_path = os.path.relpath(local_file_path, local_base_dir)
+            gcs_blob_path = os.path.join(gcs_prefix, relative_path).replace("\\", "/")
+            blob = bucket.blob(gcs_blob_path)
+            blob.upload_from_filename(local_file_path)
+            
+            logger.info(f"Uploaded {local_file_path} to gs://{bucket_name}/{gcs_blob_path}")
 
-def process_batch(batch, metrics):
+def fetch_metadata_from_gcs(schema, year, bucket):
+    client = storage.Client()
+    bucket = client.bucket(bucket)
+    metadata = {}
+    logger.info("Fetching metadata")
+    for s in schema:
+        blob = bucket.get_blob(f"data/pq/{s}/{year}/_METADATA.json")
+        if blob is not None:
+            metadata[s] = json.loads(blob.download_as_text())
+        else:
+            logger.info(f"Blob not found")
+            return {}
+    
+    return metadata
+
+def validate_hash(ade, metadata, filename):
     """
-    TODO
-    - Check if year exists in the bucket
-    - Check if existing year in the bucket requires update or not (Might need to use metadata?)
+    returns
+        `True` : Records and Hash match
+        `False` : Records and Hash mismatch
     """
+    logger.info("Validating Hash...")
+    if len(metadata.keys()) < 1:
+        logger.info("No metadata found")
+        return False
+    
+    for s, count, hash in zip(metadata.keys(), ade.row_count(), ade.get_hash()):
+        metadata[s]['files'].setdefault(f'{filename}.parquet', {})
+        file_metadata = metadata[s]['files'][f'{filename}.parquet']
+        file_metadata.setdefault('content_hash','')
+        file_metadata.setdefault('records',-1)
 
+        if (file_metadata['records'] != count) or (file_metadata['content_hash'] != hash):
+            logger.info(f"Detected metadata changes")
+            return False
+    
+    return True
 
+def download_file(url, download_path , filename):
+    filepath = os.path.join(download_path,f"{filename}.json")
+    if not os.path.exists(download_path):
+        logger.info(f"Directory missing: {download_path}")
+        logger.info(f"Created directory: {download_path}")
+        os.makedirs(download_path, exist_ok=True)
+
+    logger.info(f"Downloading: {url}")
+
+    subprocess.run(
+        f'wget -q -O - {url} | gunzip > {filepath}',
+        shell=True,
+        check=True,
+        capture_output=True,
+        text=True
+    )
+
+    logger.info(f"File saved to: {filepath}")
+    return filepath
+
+def save_metadata(save_to, metadata):
+    for s in metadata.keys():
+        try:
+            metadata[s]['generated_at'] = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+
+            meta_path = os.path.join(save_to, s, metadata[s]['year'])
+
+            if not os.path.exists(meta_path):
+                logger.info(f"Directory missing: {meta_path}")
+                logger.info(f"Created directory: {meta_path}")
+                os.makedirs(meta_path, exist_ok=True)
+
+            with open(os.path.join(meta_path,"_METADATA.json"), "w") as f:
+                json.dump(metadata[s], f, indent=4)
+        
+        except Exception as e:
+            logger.error(f"Exception caught: {e}")
+    
+def reset_dir(dir):
+    for d in dir:
+        logger.info(f"Purging files in '{d}'")
+        wildcard_path = os.path.join(d, "*")
+        popen = subprocess.Popen(f"rm -rfv {wildcard_path}", stdout=subprocess.PIPE, shell=True, text=True)
+
+        for o in popen.stdout:
+            logger.info(o.strip())
+    
+    logger.info("Purge completed")
+
+def clear_dir(dir):
+    logger.info("Deleting temporary directories")
+    popen = subprocess.Popen(f"rm -rvf {dir}", stdout=subprocess.PIPE, shell=True,text=True)
+    for o in popen.stdout:
+        logger.info(o.strip())
+
+@benchmark
+def process_batch(batch, metrics, bucket):
     logger.info("Initiating Batch Processing")
 
     # Create temp directories
@@ -137,54 +233,64 @@ def process_batch(batch, metrics):
     PQ_DIR = os.path.join(TEMP_DIR,"pq")
     tmp_dirs = [RAW_DIR, PQ_DIR]
 
-    if not os.path.exists(RAW_DIR):
-        logger.info("Directory 'raw' missing. Created 'raw'")
-        os.makedirs(RAW_DIR,exist_ok=True)
-
     # Batch iteration
     for i, b in enumerate(batch):
         logger.info('===================================================================')
         logger.info(f'============================= BATCH {i+1} =============================')
         logger.info('===================================================================')
 
+        # Reset metrics
         metrics.reset()
 
         # Partitioon iteration
         for j,p in enumerate(b):
             logger.info(f'----------------- Processing partition {j+1} -----------------')  
 
+            schema = ['patient', 'drug', 'reaction']
             year = p.get('partition_id')
             files = p.get('files')      
             total_count = p.get('count')
             file_count = 1
 
+            metadata = fetch_metadata_from_gcs(schema, year, bucket)
+
             # URL iteration
             for f in files:
-                dl_filename = f"drug-event-part-{file_count}-of-{total_count}"
+                filename = f"drug-event-part-{file_count}-of-{total_count}"
+
                 try:
-                    logger.info(f"Download started: {f}")
-                    dl_filepath = os.path.join(RAW_DIR,f"{dl_filename}.json")  
-                    subprocess.run(
-                        f'wget -q -O - {shlex.quote(f)} | gunzip > {shlex.quote(dl_filepath)}',
-                        shell=True,
-                        check=True,
-                        capture_output=True,
-                        text=True
-                    )
-                    # Saved to tmp folder
-                    logger.info(f"File saved to: {dl_filepath}")
+                    # Saved to tmp folder ./temp/raw/drug-event-part-1-of-x.json
+                    filepath = download_file(url=f, download_path=RAW_DIR, filename=filename)
 
-                    # Load JSON and map to class ADE
+                    # Load and extract JSON
                     ade = ADE(year)
-                    temp_json = read_json_file(dl_filepath)
-                    ade.extractJSON(temp_json)
+                    ade.extractJSON(read_json_file(filepath))
 
+                    # Update metrics
                     metrics.update(ade)
 
-                    logger.info(f"Parsed json file to ADE object: {dl_filepath}")
+                    logger.info(f"Parsed json file to : {filepath}")
 
-                    # Save ADE object as parquet file
-                    ade.save_as_parquet(save_to=PQ_DIR,subfolder=p.get('partition_id'),fname=dl_filename)
+                    # Validate hash for change in metadata
+                    if validate_hash(ade, metadata, filename):
+                        logger.info("Hash and Count validated. No Changes Detected.")
+                        file_count+=1
+                        continue
+
+                    # Initialize/Update metadata for each schema
+                    for s, hash, count in zip(schema, ade.get_hash(), ade.row_count()):
+                        metadata.setdefault(s, {})
+                        metadata[s]['schema'] = s
+                        metadata[s]['year'] = year
+                        metadata[s]['total_records'] = metadata[s].get('total_records',0) + count 
+
+                        metadata[s].setdefault('files',{})
+                        metadata[s]['files'].setdefault(f'{filename}.parquet',{})
+                        metadata[s]['files'][f'{filename}.parquet']['records'] = count
+                        metadata[s]['files'][f'{filename}.parquet']['content_hash'] = hash
+
+                    # Save as parquet file to ./temp/pq/<schema>/<year>/drug-event-part-1-of-x.parquet
+                    ade.save_as_parquet(save_to=PQ_DIR, fname=filename)
                     file_count+=1
 
                 except subprocess.CalledProcessError as e:
@@ -193,34 +299,25 @@ def process_batch(batch, metrics):
                 except Exception as e:
                     logger.error(f"Unexpected error occured: {e}")
 
-            # Upload parquet file to GCS bucket
-            upload_to_gcs(local_base_dir=PQ_DIR,bucket_name='zoomcamp-454219-ade-pipeline',gcs_prefix="data/pq")
-            logger.info(f"Uploaded partition '{p.get('partition_id')}' parquet files to GCS.")
+            # Save updated metadata
+            save_metadata(save_to=PQ_DIR, metadata=metadata)
 
-            # Purge tmp folder to prepare for next partition
-            for dir_path in tmp_dirs:
-                logger.info(f"Purging files in'{dir_path}'")
-                wildcard_path = os.path.join(dir_path, "*")
-                popen = subprocess.Popen(f"rm -rfv {wildcard_path}", stdout=subprocess.PIPE, shell=True, text=True)
+            # Upload metadata and parquet files to GCS bucket
+            upload_to_gcs(local_base_dir=PQ_DIR, bucket_name=bucket, gcs_prefix="data/pq")
+            logger.info(f"Uploaded partition '{year}' parquet files to GCS.")
 
-                for o in popen.stdout:
-                    logger.info(o.strip())
-            
-            logger.info("Purge completed")
+            # Purge temp folder to prepare for next partition iteration
+            reset_dir(dir=tmp_dirs)
 
         logger.info('===================================================================')
         logger.info(f'============================= Batch {i+1} END =========================')
         logger.info('===================================================================')
     
-        # Publish Metrics here
+        # Publish Metrics
         metrics.publish()
 
-    # Clear temp folder here
-    logger.info("Deleting temporary directories")
-    popen = subprocess.Popen(f"rm -rvf {TEMP_DIR}", stdout=subprocess.PIPE, shell=True,text=True)
-    for o in popen.stdout:
-        logger.info(o.strip())
-
+    # Clear temp directories
+    clear_dir(dir=TEMP_DIR)
     logger.info("Batch Processing Completed!")
 
 if __name__ == '__main__':
@@ -232,10 +329,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
     year = args.year
 
+    JOB = "openfda_ingestion"
     URL = "https://api.fda.gov/download.json"
+    BUCKET = "ade-pipeline-bucket"
     MAX_BATCH_SIZE_MB = int(args.max_batch_size_mb) if args.max_batch_size_mb else 13000
     PROMETHEUS_GATEWAY = args.metrics_gateway if args.metrics_gateway else None
-    JOB = "openfda_ingestion"
 
     logger.info(f"Fetching data: {URL}")
     res = requests.get(URL)
@@ -246,21 +344,21 @@ if __name__ == '__main__':
     partitions = downloads_json.get('partitions')
 
     metrics = Metrics(job=JOB, gateway=PROMETHEUS_GATEWAY)
-
     logger.info(f"Metrics gateway: {PROMETHEUS_GATEWAY}")
+    logger.info(f"GCS bucket: {BUCKET}")
 
     if not year:
         logger.info(f"Additional argument: None")
         logger.info(f"Creating Batches [max_batch_size={MAX_BATCH_SIZE_MB}]")
         batch, _ = create_batch(partitions, max_batch_size_mb=MAX_BATCH_SIZE_MB)
-        process_batch(batch, metrics)
+        process_batch(batch, metrics, BUCKET)
     else:
         logger.info(f"Additional argument: --year={year}")
+        logger.info(f"Creating Batches [max_batch_size={MAX_BATCH_SIZE_MB}]")
         logger.info(f"Filtering partition for year: {year}")
         filtered_parititons = filter_partition(year, partitions) 
-        logger.info(f"Creating Batches [max_batch_size={MAX_BATCH_SIZE_MB}]")
         batch, _ = create_batch(filtered_parititons,max_batch_size_mb=MAX_BATCH_SIZE_MB)
-        process_batch(batch, metrics)
+        process_batch(batch, metrics, BUCKET)
     
     metrics.close()
     
