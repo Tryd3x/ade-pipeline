@@ -1,4 +1,5 @@
-from utilities import Metrics, ADE
+from openfda.utilities.metrics import Metrics
+from openfda.utilities.ade import ADE
 
 # Test update for:
 # - Empty JSON

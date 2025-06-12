@@ -1,7 +1,7 @@
 import threading
 from time import time, sleep
 from urllib.error import URLError 
-from utilities import get_module_logger
+from openfda.utilities.helper import get_module_logger
 from prometheus_client import Gauge, CollectorRegistry, push_to_gateway, delete_from_gateway
 
 logger = get_module_logger(__name__)

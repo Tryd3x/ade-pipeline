@@ -1,6 +1,6 @@
-import json
 import os
-import shlex
+import sys
+import json
 import requests
 import subprocess
 from time import time
@@ -8,9 +8,18 @@ from dotenv import load_dotenv
 from google.cloud import storage
 from argparse import ArgumentParser
 from datetime import datetime, timezone
+
 load_dotenv()
 
-from utilities import ADE, Metrics, part_size_mb, partition_id_by_year, read_json_file, get_module_logger, filter_partition
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if parent_dir not in sys.path:
+    sys.path.insert(0,parent_dir)
+
+from openfda.utilities.ade import ADE
+from openfda.utilities.helper import *
+from openfda.utilities.metrics import Metrics
+from openfda.utilities.logger_config import get_module_logger
+
 
 logger = get_module_logger(__name__)
 

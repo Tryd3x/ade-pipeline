@@ -1,8 +1,14 @@
 """ Fixtures, preparing test suites, cleaning test suites, external data, API calls etc"""
+import os
+import sys
 import pytest
 import requests
 
-from utilities import read_json_file
+parent_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
+from openfda.utilities.helper import read_json_file
 
 @pytest.fixture
 def setup_test_suite():

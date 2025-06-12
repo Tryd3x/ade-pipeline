@@ -3,7 +3,7 @@ import os
 import uuid
 import hashlib
 import pandas as pd
-from utilities import get_module_logger
+from openfda.utilities.helper import get_module_logger
 
 logger = get_module_logger(__name__)
 
