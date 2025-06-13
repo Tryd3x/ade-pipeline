@@ -1,6 +1,6 @@
 variable "gcs_bucket_name" {
   description = "Bucket Name"
-  default     = "zoomcamp-454219-ade-pipeline"
+  default     = "ade-pipeline-bucket"
 }
 
 variable "region" {
