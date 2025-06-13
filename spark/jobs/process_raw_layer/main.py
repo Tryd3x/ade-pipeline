@@ -1,8 +1,21 @@
 import os
+import sys
 import argparse
 from google.cloud import storage
 from pyspark.sql import SparkSession
-from utils import *
+
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
+from process_raw_layer.utils.tasks import *
+from process_raw_layer.utils.metrics import Metrics
+
+# from utils import *
+
+JOB = "openfda_transformation"
+BUCKET = "ade-pipeline-bucket"
+PROMETHEUS_GATEWAY = "pushgateway:9091"
 SPARK_MASTER = "spark://spark-master:7077"
 
 spark = (
@@ -25,7 +38,7 @@ print("Executor Memory Overhead:", conf.get("spark.executor.memoryOverhead"))
 spark._jsc.hadoopConfiguration().set("google.cloud.auth.service.account.json.keyfile",os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"))
 
 client = storage.Client()
-bucket = client.get_bucket("zoomcamp-454219-ade-pipeline")
+bucket = client.get_bucket(BUCKET)
 dirs = ["data/pq/patient", "data/pq/drug", "data/pq/reaction"]
 
 parser = argparse.ArgumentParser(description="Spark job for transformation")
@@ -35,8 +48,6 @@ parser.add_argument("--year", help="List of years to perform the job on")
 args = parser.parse_args()
 years = []
 
-JOB = "openfda_transformation"
-PROMETHEUS_GATEWAY = "pushgateway:9091"
 
 for dir in dirs:
     schema = dir.split('/')[-1]
