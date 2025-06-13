@@ -1,0 +1,7 @@
+# Modules only for notebooks
+
+ipykernel
+dotenv
+requests
+pandas
+google-cloud-storage

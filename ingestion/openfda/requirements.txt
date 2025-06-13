@@ -1,0 +1,12 @@
+prometheus_client==0.21.1
+pytest==8.3.5
+pandas==2.2.3
+google-cloud-storage==3.1.0
+dotenv==0.9.9
+pytest-mock==3.14.0
+pyarrow==19.0.1
+
+# For typing
+mypy
+types-requests 
+types-google-cloud-storage
