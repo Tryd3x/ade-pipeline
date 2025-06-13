@@ -1,1 +1,0 @@
-docker build -t ade-pipeline/openfda:latest -f dockerfile .
