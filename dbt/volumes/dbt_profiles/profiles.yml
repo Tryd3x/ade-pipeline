@@ -8,7 +8,7 @@ ade_pipeline:
       location: us-central1
       method: service-account
       priority: interactive
-      project: zoomcamp-454219
+      project: ade-pipeline
       threads: 6
       type: bigquery
 
@@ -18,7 +18,7 @@ ade_pipeline:
       location: us-central1
       method: service-account
       priority: interactive
-      project: zoomcamp-454219
+      project: ade-pipeline
       threads: 6
       type: bigquery
   target: prod

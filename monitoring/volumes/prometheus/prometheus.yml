@@ -3,9 +3,9 @@ global:
 
 scrape_configs:
   # App based metrics (metrics specific only to app)
-  - job_name: 'openFDA_drug_ingestion'
-    static_configs:
-      - targets: ['ingestion:8000'] # The port depends on the start_http_server(port) inside the ingestion script
+  # - job_name: 'openFDA_drug_ingestion'
+  #   static_configs:
+  #     - targets: ['ingestion:8000'] # The port depends on the start_http_server(port) inside the ingestion script
 
   # Pushgateway metrics (metrics from multiple apps collected here)
   - job_name: 'pushgateway'
