@@ -26,7 +26,9 @@ def process_parquet(params, year, dedup_strategy = "row_hash"):
     
     blobs = list(bucket.list_blobs(prefix=f"{dir}/{year}"))
 
-    for blob in blobs:
+    parquet_blobs = [blob for blob in blobs if blob.name.endswith(".parquet")]
+
+    for blob in parquet_blobs:
         source_blob = f"gs://{bucket.name}/{blob.name}"
         destination_blob = f"gs://{bucket.name}/cleaned/pq/{schema}/{year}/"
 
