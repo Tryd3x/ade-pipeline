@@ -9,8 +9,9 @@ venv-*
 keys/*
 !keys/.gitkeep
 
-# Ignore Jupyter Notebook checkpoints
+# Ignore Jupyter Notebooks
 .ipynb_checkpoints
+**/notebooks/
 
 # Ignore Python cache files
 __pycache__
