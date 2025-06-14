@@ -1,4 +1,4 @@
-from process_raw_layer.transformations import patient, drug, reaction
+from transformations import patient, drug, reaction
 from pyspark.sql import functions as F
 
 def get_year(blob):
