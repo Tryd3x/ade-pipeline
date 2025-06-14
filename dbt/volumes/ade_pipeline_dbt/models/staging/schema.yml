@@ -1,7 +1,7 @@
 version: 2
 sources:
   - name: external
-    database: zoomcamp-454219     # data source in bigq
+    database: ade-pipeline     # data source in bigq
     schema: ade_external          # dataset in data source
     tables:
       - name: ext_patient
