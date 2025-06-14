@@ -21,7 +21,6 @@ The pipeline is designed to improve medication safety and optimize patient outco
 ![Pipeline Architecture Flowchart](assets/images/flowchart.png)
 
 ## ⚙️ How the Project Works (Technical Overview)
----
 ### 🚀 Ingestion (Python, OpenFDA API)
 
 - Custom Python package to pull, flatten, and restructure deeply nested OpenFDA JSON data.
