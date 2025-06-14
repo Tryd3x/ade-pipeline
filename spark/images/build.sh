@@ -1,13 +1,9 @@
-# -- Software Stack Version
-
 SPARK_VERSION="3.4.4"
 HADOOP_VERSION="3"
 JUPYTERLAB_VERSION="4.1.5"
 SHARED_WORKSPACE="/opt/workspace"
 LIVY_HOME="/opt/livy"
 LIVY_VERSION="0.8.0-incubating"
-
-# -- Building the Images
 
 docker build \
   --build-arg shared_workspace="${SHARED_WORKSPACE}" \
