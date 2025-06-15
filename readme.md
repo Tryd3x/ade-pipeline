@@ -84,7 +84,7 @@ The pipeline is designed to improve medication safety and optimize patient outco
 
 > 📸 Example Dashboard:
 
-![Grafana Medication Safety Dashboard](assets/images/grafana-dashboard.png)
+![Grafana Medication Safety Dashboard](assets/images/grafana-reports.png)
 
 ---
 
