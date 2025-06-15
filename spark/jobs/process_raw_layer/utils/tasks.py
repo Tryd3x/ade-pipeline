@@ -1,4 +1,4 @@
-from process_raw_layer.transformations import patient, drug, reaction
+from transformations import patient, drug, reaction
 from pyspark.sql import functions as F
 
 def get_year(blob):
@@ -26,7 +26,9 @@ def process_parquet(params, year, dedup_strategy = "row_hash"):
     
     blobs = list(bucket.list_blobs(prefix=f"{dir}/{year}"))
 
-    for blob in blobs:
+    parquet_blobs = [blob for blob in blobs if blob.name.endswith(".parquet")]
+
+    for blob in parquet_blobs:
         source_blob = f"gs://{bucket.name}/{blob.name}"
         destination_blob = f"gs://{bucket.name}/cleaned/pq/{schema}/{year}/"
 

@@ -1,17 +1,9 @@
 import os
-import sys
 import argparse
 from google.cloud import storage
 from pyspark.sql import SparkSession
+from utils import *
 
-parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if parent_dir not in sys.path:
-    sys.path.insert(0, parent_dir)
-
-from process_raw_layer.utils.tasks import *
-from process_raw_layer.utils.metrics import Metrics
-
-# from utils import *
 
 JOB = "openfda_transformation"
 BUCKET = "ade-pipeline-bucket"

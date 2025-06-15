@@ -29,7 +29,7 @@ def update_uris(bucket, schema, years):
     return list(f"gs://{bucket}/cleaned/pq/{schema}/{year}/*.parquet" for year in years)
 
 
-BUCKET_NAME = "zoomcamp-454219-ade-pipeline"
+BUCKET_NAME = "ade-pipeline-bucket"
 DATASET_ID = "ade_external"
 SCHEMA = ['patient', 'reaction', 'drug']
 
