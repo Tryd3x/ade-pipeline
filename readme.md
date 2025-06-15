@@ -70,17 +70,11 @@ The pipeline is designed to improve medication safety and optimize patient outco
 
 ### 📊 Visualization (Grafana)
 
-- Dashboards highlight:
-  - ADE trends over time.
+- Dashboards highlights:
   - Most reported drug reactions.
-  - High-risk combinations.
-  - Age-based subgroups at highest risk.
-
-## 📈 Sample Results
-
-- **Top 10 medications** linked to hospitalization in patients 65+.  
-- **Year-over-year increase** in ADEs for specific drug classes.  
-- **Repeat adverse reactions** across multiple reports.  
+  - **Top 3 medications** linked to hospitalization in patients over 65+ of age.  
+  - **Year-over-year increase** in ADEs reports.  
+  - **Adverse reactions** across multiple reports.  
 
 > 📸 Example Dashboard:
 
