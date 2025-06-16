@@ -9,4 +9,4 @@ pyarrow==19.0.1
 # For typing
 mypy
 types-requests 
-types-google-cloud-storage
+# types-google-cloud-storage

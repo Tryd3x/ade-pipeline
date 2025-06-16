@@ -10,10 +10,10 @@ RUN python -m venv venv \
     && venv/bin/pip install --upgrade pip \
     && venv/bin/pip install -r requirements.txt
 
-COPY ./main.py .
-COPY ./utilities ./utilities
+COPY ./main.py ./openfda/main.py
+COPY ./utilities ./openfda/utilities
 
 ENV PATH="/app/venv/bin:$PATH"
 ENV PYTHONPATH="/app"
 
-ENTRYPOINT ["python" ,"main.py"]
+ENTRYPOINT ["python" ,"openfda/main.py"]
