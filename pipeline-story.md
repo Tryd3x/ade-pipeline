@@ -1,23 +1,3 @@
-# 💊 Healthcare Data Pipeline: Medication Safety
-
-## 📄 Summary
-
-This project builds a scalable healthcare data pipeline to analyze over **100GB** of adverse drug event (ADE) data collected from **2004 to 2025**, focusing on elderly populations (65+). It delivers actionable insights for healthcare providers, policy makers, and researchers by uncovering high-risk medications, event trends, and drug interactions using real-world data from the FDA.
-
-## 📌 Project Overview
-
-The pipeline is designed to improve medication safety and optimize patient outcomes in aging populations by identifying preventable risks. It supports ingestion, transformation, orchestration, infrastructure provisioning, and analytics—all integrated for scalable, reproducible analysis.
-
-## ✅ What the Project Does (Results & Insights)
-
-- Processes and analyzes **100GB+** of ADE data from **2004–2025**.
-- Identifies medications most associated with serious adverse events in elderly patients.
-- Highlights common event types (e.g., hospitalization, death) and trends over time.
-- Detects high-risk drug combinations and repeat-administration reactions.
-- Provides structured, queryable data marts for analytics and dashboards.
-
----
-
 ## 🧵 How Everything Fits Together
 
 Let me walk you through the architecture and inner workings of the ADE pipeline using real artifacts from the project. Think of this as a visual storytelling tour from raw data to insights.
@@ -34,7 +14,7 @@ The pipeline processes large-scale drug safety data in stages: **ingestion**, **
 
 ---
 
-### 📅 Ingestion: Scalable and Memory-Aware
+### 📥 Ingestion: Scalable and Memory-Aware
 
 Ingestion is handled by a custom Python package running in lightweight Docker containers. It connects to the OpenFDA API, chunking downloads to stay within memory limits.
 
@@ -44,7 +24,7 @@ Each container processes data for a specific year or range, writing flattened JS
 
 ---
 
-### ⚒️ DAGs in Action: Airflow Orchestration
+### 🛠 DAGs in Action: Airflow Orchestration
 
 Airflow (via Astronomer) orchestrates the ingestion and transformation processes.
 
@@ -86,17 +66,19 @@ These show:
 - Volume of data ingested.
 - Processing duration.
 
+
 Granular dashboards show per-file null counts:
 
 ![Grafana Ingestion Nulls](assets/images/grafana-metrics-ingestion-null.png)
 
 ---
 
-#### ♻️ Transformation Dashboards
+#### 🔁 Transformation Dashboards
 
 Transformation is similarly monitored:
 
 ![Grafana Transformation](assets/images/grafana-metrics-transformation.png)
+
 
 ---
 
@@ -112,6 +94,7 @@ Models are divided into:
 - **Marts**: analytical outputs for business questions.
 
 ![DBT Models](assets/images/dbt-models-macros.png)
+
 
 ---
 
@@ -139,15 +122,3 @@ Dashboards allow:
 - Identifying repeat adverse reactions.
 - Monitoring trends over time.
 
----
-
-## ❓ Key Questions the Project Aims to Answer
-
-- Which medications are most frequently associated with serious adverse events in patients over 65?
-- What types of events (e.g., hospitalization, disability, death) are most common in older adults taking specific drugs?
-- How have these trends changed from 2004 to 2025?
-- Which age sub-groups (65–70, 71–80, 81+) are most at risk?
-- What drug combinations are disproportionately represented in adverse event reports?
-- What drugs have caused reactions after readministration?
-
----
