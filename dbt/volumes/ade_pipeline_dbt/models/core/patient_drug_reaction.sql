@@ -1,9 +1,9 @@
-{# {{
+{{
   config(
     materialized = 'table',
     partition_by={"field" : "record_date", "data_type": "date"}
     )
-}} #}
+}}
 
 SELECT
     p.patientid
