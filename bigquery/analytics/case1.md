@@ -1,5 +1,7 @@
 ## Case Study 1: Drug Safety Signal Detection for Risk Management
 
+![Case_1](../images/case1.png)
+
 ### Business Impact
 Early detection prevents costly recalls (average drug recall costs $100M+), protects brand reputation, and enables proactive regulatory communication.
 
