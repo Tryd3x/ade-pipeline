@@ -20,6 +20,7 @@ SELECT
     , p.reported_date
     , p.age
     , p.serious_type
+    , p.safety_report_id
     , d.action_taken
     , d.drug_characterization
     , d.medicinal_product

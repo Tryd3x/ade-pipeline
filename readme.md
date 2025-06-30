@@ -1,5 +1,7 @@
 # 💊 Healthcare Data Pipeline: Medication Safety
 
+![openFDA-logo](assets/images/openfda.png)
+
 ## 📄 Summary
 
 This project builds a scalable healthcare data pipeline to analyze over **100GB** of adverse drug event (ADE) data collected from **2004 to 2025**, focusing on elderly populations (65+). It delivers actionable insights for healthcare providers, policy makers, and researchers by uncovering high-risk medications, event trends, and drug interactions using real-world data from the FDA.
