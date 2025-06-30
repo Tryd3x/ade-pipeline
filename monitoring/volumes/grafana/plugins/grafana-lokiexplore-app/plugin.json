@@ -37,8 +37,8 @@
                 "path": "img/table.png"
             }
         ],
-        "version": "1.0.17",
-        "updated": "2025-05-21",
+        "version": "1.0.20",
+        "updated": "2025-06-26",
         "links": [
             {
                 "name": "Github",
@@ -66,7 +66,8 @@
         "plugins": [],
         "extensions": {
             "exposedComponents": [
-                "grafana-adaptivelogs-app/temporary-exemptions/v1"
+                "grafana-adaptivelogs-app/temporary-exemptions/v1",
+                "grafana-lokiexplore-app/embedded-logs-exploration/v1"
             ]
         }
     },
@@ -87,6 +88,11 @@
                 "id": "grafana-lokiexplore-app/open-in-explore-logs-button/v1",
                 "title": "Open in Logs Drilldown button",
                 "description": "A button that opens a logs view in the Logs Drilldown app."
+            },
+            {
+                "id": "grafana-lokiexplore-app/embedded-logs-exploration/v1",
+                "title": "Embedded Logs Exploration",
+                "description": "A component that renders a logs exploration view that can be embedded in other parts of Grafana."
             }
         ],
         "extensionPoints": [

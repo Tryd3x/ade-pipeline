@@ -3,6 +3,11 @@
     "type": "app",
     "name": "Grafana Metrics Drilldown",
     "id": "grafana-metricsdrilldown-app",
+    "dependencies": {
+        "grafanaDependency": ">=11.6.0",
+        "plugins": []
+    },
+    "preload": true,
     "autoEnabled": true,
     "info": {
         "keywords": [
@@ -22,20 +27,16 @@
         },
         "screenshots": [
             {
-                "name": "homepage",
-                "path": "img/homepage.png"
-            },
-            {
                 "name": "metricselect",
-                "path": "img/metricselect.png"
+                "path": "img/metrics-drilldown.png"
             },
             {
                 "name": "breakdown",
                 "path": "img/breakdown.png"
             }
         ],
-        "version": "1.0.1",
-        "updated": "2025-05-06",
+        "version": "1.0.4",
+        "updated": "2025-06-24",
         "links": [
             {
                 "name": "GitHub",
@@ -57,11 +58,6 @@
             "defaultNav": true
         }
     ],
-    "dependencies": {
-        "grafanaDependency": ">=11.6.0",
-        "plugins": []
-    },
-    "preload": true,
     "extensions": {
         "addedLinks": [
             {
