@@ -8,8 +8,8 @@ Hash: SHA512
   "signedByOrg": "grafana",
   "signedByOrgName": "Grafana Labs",
   "plugin": "grafana-exploretraces-app",
-  "version": "1.1.0",
-  "time": 1751014998022,
+  "version": "1.1.1",
+  "time": 1751278283708,
   "keyId": "7e4d0c6a708866e7",
   "files": {
     "142.js": "0246483f242d1e9a15756caa28c94d437b17a12b19ab60568956554229e84731",
@@ -23,7 +23,7 @@ Hash: SHA512
     "448.js.map": "70e2327976999c3a55a1b3517b2efb86906d913ae59dabf63a371ba73e321426",
     "67.js": "88739afcc4cdfd267550e924116d7b301273a6a8e7b3ee4244f0039d322e13b5",
     "67.js.map": "90a45678139fe126e82740f6e756d9c66df7ca05188ca96441766003bf9b250c",
-    "712.js": "f10273fc9f4edc7b16feec38d3ded3b724bb6bb6be17a2f90d80a22d23c89b13",
+    "712.js": "eb000f5dbe25684c5b0bcdec554894b2c7cbabf4dbaeaf9109a5b2d296509917",
     "712.js.map": "4e57f2161e5fa6545649fea1c82c5685c487076c0bc4397b49cb2c1f7e6355be",
     "767.js": "a54194b6027d4f713ed6a043a790a78741b4a92aae53d0571858b53b5f1bb937",
     "767.js.map": "688a38d2c08c848262f0086de5d7c63248252c0575abeb2a2f27f1d866d6aab9",
@@ -41,9 +41,9 @@ Hash: SHA512
     "img/errors-root-cause.png": "599bf867d3411fa05a08c26c63b421c351e2a6c7689fb254bdb949b869204ad0",
     "img/histogram-breakdown.png": "469248a97a7f029b94479c3f89231c1e921957a3b2aad98a6135949540df66a3",
     "img/logo.svg": "3a23f8cdad37100716aa8a17c065afd0ee1c557b9dbeb5991482373297fe60e2",
-    "module.js": "793498aac795b31cde6343e7a44b85552f8e20919468b8ceabd30213306d7c6f",
+    "module.js": "d309bea0b303676ec962791ce3b65e185f661ce43705abd783db90fdebc97fa4",
     "module.js.map": "bb2c273a08a0af0741232ed2b9088c07f1b40426e87e75629c294ac15b22414a",
-    "plugin.json": "a597b89e589201cfa1f7d1cac7c6b528335c5156ea44a433a29cca5064698316",
+    "plugin.json": "ad747bd7b07c06000e41dd279412039904262681ea061d9438f2f33b1022afa3",
     "utils/trace-merge/test-responses/service-struct.json": "e00d31b20fec475399a0c4b18bcbb26b9c36f72c7e92283a67b032651b05c870"
   }
 }
@@ -51,10 +51,10 @@ Hash: SHA512
 Version: OpenPGP.js v4.10.11
 Comment: https://openpgpjs.org
 
-wrkEARMKAAYFAmheXlYAIQkQfk0ManCIZucWIQTzOyW2kQdOhGNlcPN+TQxq
-cIhm5z5jAgkBRYjI0wqdd2DfzW4eOI0719dpO9/4yWzATw/TUN2kzMn3YUun
-T/XzTOSCOm3w6OulU3MK/1a+Rs41TGGA6w8kYtMCCQFtNiwiHjtcnYChKxDU
-3OKzzz4rb4IZrebHpaqa8VY0Cal/eUFw0d6kMTExOM6I4iyhOnxWltlBNYrF
-nynxO8Bcbw==
-=+q0h
+wrkEARMKAAYFAmhiYssAIQkQfk0ManCIZucWIQTzOyW2kQdOhGNlcPN+TQxq
+cIhm554lAgkA2J6wbP+hMQaAAmRd8Lva2YOXItcJvLJYpdjYHvcouHI0L7Pd
+BzUtwpbGlF6PtfeoIdBfukIkosgRh9HczTGEcLYCCQC1ptHpeGxu57hBdHRX
+G/ucQDCrnCCwptO5iOAb+Na9CG3rq0YipKoDITrH5CZ58EBwGI7VTxr0odrK
+0YUnEOC9yA==
+=ebpy
 -----END PGP SIGNATURE-----

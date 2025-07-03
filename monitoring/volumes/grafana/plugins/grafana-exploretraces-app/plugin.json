@@ -70,11 +70,11 @@
       "name": "Grafana"
     },
     "build": {
-      "time": 1751014997123,
+      "time": 1751278282933,
       "repo": "https://github.com/grafana/traces-drilldown",
       "branch": "main",
-      "hash": "73216e817713a8d608609005b6b68b7174ac73bd",
-      "build": 621
+      "hash": "3196ac93d8e63dc1a2cc49525e484c1cde8b0215",
+      "build": 625
     },
     "description": "Use Rate, Errors, and Duration (RED) metrics derived from traces to investigate errors within complex distributed systems.",
     "keywords": [
@@ -111,8 +111,8 @@
         "path": "img/errors-root-cause.png"
       }
     ],
-    "updated": "2025-06-27",
-    "version": "1.1.0"
+    "updated": "2025-06-30",
+    "version": "1.1.1"
   },
   "name": "Grafana Traces Drilldown",
   "preload": true,
