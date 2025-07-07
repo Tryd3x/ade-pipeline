@@ -89,7 +89,7 @@ SELECT * FROM data_quality_checks
 
 **Key Insights** 
 
-- **Dupixent** leads with **354K** reports, followed by **Human Immunoglobulin G** (**119K**) and **Prednisolone** (**103K**).
+- **Dupixent** leads with **354K** reports, followed by **Human Immunoglobulin G** (**119K**) and **Prednisone** (**103K**).
 - **Dupixent** shows significantly higher volume than the other two drugs, with **3x more reports** than the second-highest drug.
 
 **Strategic Recommendations**
