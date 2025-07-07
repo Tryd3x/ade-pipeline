@@ -1,4 +1,4 @@
-# Case Study 1: Drug Safety Signal Detection for Risk Management
+Case Study 1: Drug Safety Signal Detection for Risk Management# Case Study 1: Drug Safety Signal Detection for Risk Management
 
 ![Case_1](../images/case1.png)
 
@@ -485,3 +485,6 @@ ORDER BY medicinal_product, severity_rank;
 - Implement **prescriber education programs** focusing on **appropriate patient selection** and **monitoring**.
 
 ---
+
+Interested about the underlying architecture? Feel free to checkout:  
+[Healthcare Data Pipeline: Medication Safety](../../readme.md)

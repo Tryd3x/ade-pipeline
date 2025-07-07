@@ -143,13 +143,8 @@ Dashboards allow:
 
 ---
 
-## ❓ Key Questions the Project Aims to Answer
+## 📓 Case Studies Conducted
 
-- Which medications are most frequently associated with serious adverse events in patients over 65?
-- What types of events (e.g., hospitalization, disability, death) are most common in older adults taking specific drugs?
-- How have these trends changed from 2004 to 2025?
-- Which age sub-groups (65–70, 71–80, 81+) are most at risk?
-- What drug combinations are disproportionately represented in adverse event reports?
-- What drugs have caused reactions after readministration?
+[Case Study 1: Drug Safety Signal Detection for Risk Management](bigquery/analytics/case1_drug_safety_signal_detection_for_risk_management.md)
 
 ---
