@@ -1,4 +1,4 @@
-Case Study 1: Drug Safety Signal Detection for Risk Management# Case Study 1: Drug Safety Signal Detection for Risk Management
+# Case Study 1: Drug Safety Signal Detection for Risk Management
 
 ![Case_1](../images/case1.png)
 
