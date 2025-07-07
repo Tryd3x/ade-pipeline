@@ -6,6 +6,8 @@
 
 This analysis examines adverse drug event (ADE) patterns over the past 12 months to identify emerging safety signals requiring immediate regulatory attention. Through systematic analysis of report volumes, severity patterns, and temporal trends, three high-risk medications were identified along with their associated safety profiles to guide proactive risk management strategies.
 
+Note: *Analysis reflects data up to July 5, 2025.*
+
 ## Business Impact
 
 Early detection prevents costly recalls (average drug recall costs $100M+), protects brand reputation, and enables proactive regulatory communication. This analysis supports FDA post-marketing surveillance requirements under 21 CFR Part 314.80 and enables data-driven safety decision making.
