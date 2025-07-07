@@ -145,6 +145,6 @@ Dashboards allow:
 
 ## 📓 Case Studies Conducted
 
-[Case Study 1: Drug Safety Signal Detection for Risk Management](bigquery/analytics/case1_drug_safety_signal_detection_for_risk_management.md)
+[Case Study 1: Drug Safety Signal Detection for Risk Management in the US](bigquery/analytics/case1_drug_safety_signal_detection_for_risk_management.md)
 
 ---

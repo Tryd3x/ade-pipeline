@@ -1,12 +1,13 @@
-# Case Study 1: Drug Safety Signal Detection for Risk Management
+# Case Study 1: Drug Safety Signal Detection for Risk Management in the US
 
 ![Case_1](../images/case1.png)
 
+*Dsiclaimer: *Analysis reflects data up to March 1, 2025, and only covers reports in the US.**
+
 ## Executive Summary
 
-This analysis examines adverse drug event (ADE) patterns over the past 12 months to identify emerging safety signals requiring immediate regulatory attention. Through systematic analysis of report volumes, severity patterns, and temporal trends, three high-risk medications were identified along with their associated safety profiles to guide proactive risk management strategies.
+This analysis examines adverse drug event (ADE) patterns in the US over the past 12 months to identify emerging safety signals requiring immediate regulatory attention. Through systematic analysis of report volumes, severity patterns, and temporal trends, three high-risk medications were identified along with their associated safety profiles to guide proactive risk management strategies.
 
-Note: *Analysis reflects data up to July 5, 2025.*
 
 ## Business Impact
 
@@ -14,23 +15,23 @@ Early detection prevents costly recalls (average drug recall costs $100M+), prot
 
 ## Key findings
 
-- **Three high-volume drugs identified:** Methotrexate (1.59M reports), Prednisolone (1.40M), and Actemra (1.39M) dominate adverse event reporting
-- **Critical safety alert:** All three drugs show concerning serious adverse event rates exceeding 60%, with Methotrexate and Actemra reaching >71%
-- **Escalating risk trends:** Upward trajectory in serious events across all drugs, particularly pronounced in recent months
-- **Safety signal clusters:** September anomaly spikes (15-22% above baseline) and emerging recent-month patterns require immediate investigation
-- **Off-label prescribing concerns:** Methotrexate and Prednisolone show significant off-label use (11K+ reports each), indicating potential prescribing practice issues
+- **Three high-volume drugs identified:** Dupixent (354K reports), Human Immunoglobulin G (119K), and Prednisone (103K) represent the highest volume adverse event reports in the US
+- **Moderate safety concerns:** Human Immunoglobulin G shows the highest serious adverse event rate at 57.1%, while Dupixent demonstrates the lowest at 6.8%
+- **Stable risk trends:** All three drugs maintain relatively stable serious event rates over time, with Human Immunoglobulin G showing elevated but consistent levels around 60%
+- **Significant anomaly patterns:** Dupixent shows dramatic spike reaching 76.5% anomaly in January, indicating potential emerging safety signals requiring investigation
+- **Diverse reaction profiles:** Each drug shows distinct adverse reaction patterns, with Human Immunoglobulin G dominated by covid-19 and sinusitis, while Dupixent shows more varied reactions including product use issues
 
 ## Strategic Recommendations
 
-- **Crisis management protocols** must be established for all three drugs given exceptional serious event rates
-- **Emergency regulatory reviews** needed for Methotrexate and Actemra due to >70% serious event classification
-- **Real-time monitoring systems** implementation to detect safety anomalies within 48-72 hours rather than months
-- **Enhanced patient monitoring** and prescriber education programs to address off-label use risks
-- **Predictive safety models** development to proactively manage emerging risks and maintain competitive market positioning
+- **Enhanced monitoring protocols** for Human Immunoglobulin G given consistently elevated serious event rates above 50%
+- **Immediate investigation** of Dupixent's January anomaly spike to identify root causes and prevent recurrence
+- **Targeted safety communications** addressing specific reaction patterns for each drug to optimize prescriber awareness
+- **Continuous trend monitoring** to detect early signals of changing safety profiles
+- **Risk-stratified patient monitoring** programs based on each drug's unique adverse event profile
 
 ## Technical Performance Notes
 - **Query Optimization**: Implemented reusable CTEs and filtering by partition `record_date` reducing query costs by ~30%
-- **Data Volume**: Analysis covers 4.38M+ adverse event records across 3 high-volume drugs
+- **Data Volume**: Analysis covers 576K+ adverse event records across 3 high-volume drugs from US reports
 - **Temporal Analysis**: Processed 12-month trend data with month-over-month variance calculations for pattern detection
 - **Statistical Rigor**: Applied significance thresholds ensuring reliable safety signal detection
 
@@ -39,6 +40,8 @@ Early detection prevents costly recalls (average drug recall costs $100M+), prot
 ### Data Quality Validation
 
 Before conducting the main analysis, the data is validated for its completeness and quality:
+
+![case1_dq.png](../images/case1_dq.png)
 
 ```sql
 WITH data_quality_checks AS (
@@ -49,6 +52,7 @@ WITH data_quality_checks AS (
   WHERE 
     record_date >= DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR), YEAR)
     AND fda_last_updated >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR)
+    AND report_origin = 'US'
   
   UNION ALL
   
@@ -60,6 +64,7 @@ WITH data_quality_checks AS (
     medicinal_product IS NULL
     AND record_date >= DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR), YEAR)
     AND fda_last_updated >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR)
+    AND report_origin = 'US'
     
   UNION ALL
   
@@ -71,15 +76,26 @@ WITH data_quality_checks AS (
     patient_reaction IS NULL
     AND record_date >= DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR), YEAR)
     AND fda_last_updated >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR)
+    AND report_origin = 'US'
 )
 SELECT * FROM data_quality_checks
 ```
 
-![case1_dq.png](../images/case1_dq.png)
-
 ## Question 1: Which three drugs have the highest volume of adverse event reports in the last 12 months?
 
 **Business Purpose**: Identify drugs requiring immediate safety attention due to high report volume, indicating either widespread use or emerging safety concerns.
+
+![Answer 1.1](../images/case1_1.png)
+
+**Key Insights** 
+
+- **Dupixent** leads with **354K** reports, followed by **Human Immunoglobulin G** (**119K**) and **Prednisolone** (**103K**).
+- **Dupixent** shows significantly higher volume than the other two drugs, with **3x more reports** than the second-highest drug.
+
+**Strategic Recommendations**
+
+- **Prioritize Dupixent safety monitoring** due to exceptionally high reporting volume indicating widespread use or emerging concerns.
+- **Implement volume-based risk stratification** with **enhanced surveillance protocols** for high-volume drugs
 
 ```sql
 SELECT 
@@ -93,6 +109,7 @@ WHERE
     -- Filters
     AND medicinal_product IS NOT NULL
     AND fda_last_updated >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR)
+    AND report_origin = 'US'
 GROUP BY 
     medicinal_product
 HAVING 
@@ -103,23 +120,25 @@ ORDER BY
 LIMIT 3;
 ```
 
-![Answer 1.1](../images/case1_1.png)
-
-**Key Insights** 
-
-- **Methotrexate** leads with **1.59M** reports, followed by **Prednisolone** (**1.40M**) and **Actemra** (**1.39M**).
-- All three drugs show **similarly high volumes** with **minimal variation** (~0.20M difference).
-
-**Strategic Recommendations**
-
-- **Prioritize dedicated safety monitoring teams** due to exceptional reporting volumes.
-- **Implement enhanced risk management programs** to **proactively address emerging safety concerns**
-
 ---
 
 ## Question 1.2: What percentage of reports are classified as serious (death and hospitalization) for each high-volume drug?
 
 **Business Purpose**: Assess severity patterns to prioritize safety investigations and resource allocation. Higher serious event rates indicate greater regulatory urgency.
+
+![Answer 1.2](../images/case1_2.png)
+
+**Key Insights**
+
+- **Human Immunoglobulin G** shows the highest serious adverse event rate at **57.1%** (55.1% hospitalization, 1.97% death rate).
+- **Prednisone** demonstrates moderate serious event rates at **43.5%** (35.7% hospitalization, 7.79% death rate).
+- **Dupixent** exhibits the lowest serious event rate at **6.8%** (6.39% hospitalization, 0.42% death rate).
+
+**Strategic Recommendations**
+
+- **Enhanced monitoring protocols** for Human Immunoglobulin G given elevated serious event rates above 50%.
+- **Risk-based patient selection** and **monitoring guidelines** for each drug based on their distinct safety profiles.
+- **Targeted safety communications** to healthcare providers highlighting **drug-specific risk patterns**.
 
 ```sql
 WITH
@@ -134,6 +153,7 @@ high_volume_drugs AS (
     record_date >= DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR), YEAR)
     AND medicinal_product IS NOT NULL
     AND fda_last_updated >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR)
+    AND report_origin = 'US'
   GROUP BY 
     medicinal_product
   HAVING 
@@ -160,6 +180,7 @@ high_volume_drugs AS (
     record_date >= DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR), YEAR)
     AND p.medicinal_product IS NOT NULL
     AND fda_last_updated >= CURRENT_DATE() - INTERVAL 1 YEAR
+    AND report_origin = 'US'
   GROUP BY 
     p.medicinal_product
   HAVING 
@@ -173,25 +194,25 @@ FROM event_reports
 ORDER BY medicinal_product
 ```
 
-![Answer 1.2](../images/case1_2.png)
-
-**Key Insights**
-
-- **Methotrexate** and **Actemra** show alarming **71.9%** and **71.5%** death rate, respectively.
-- **Prednisolone** has a **61.0%** death rate with **notably higher hospitalization rates** (**11.9%**).
-
-**Strategic Recommendations**
-
-- **Immediate regulatory review** required for Methotrexate and Actemra due to **>70% death rate**.
-- **Implement enhanced patient monitoring protocols** with **early warning systems** for all three drugs.
-- **Consider label updates** to better communicate **serious risk profiles** to healthcare providers.
-
-
 ---
 
 ## Question 1.3: Are adverse event reports increasing over months for high-volume drugs?
 
 **Business Purpose**: Detect emerging safety signals through temporal trend analysis. Increasing trends may indicate evolving safety profiles or changes in prescribing patterns.
+
+![Answer 1.3](../images/case1_3.png)
+
+**Key Insights**
+
+- **Human Immunoglobulin G** maintains consistently elevated serious event rates around **60%** throughout the monitoring period.
+- **Prednisone** shows relatively stable serious event rates around **40-45%** with minimal variation.
+- **Dupixent** demonstrates consistently low serious event rates around **5-10%** with slight increase in recent months.
+
+**Strategic Recommendations**
+
+- **Continuous monitoring** for Human Immunoglobulin G given persistently elevated serious event rates.
+- **Trend analysis protocols** to detect early signals of changing safety profiles across all drugs.
+- **Baseline establishment** for each drug's normal serious event rate ranges to identify future anomalies.
 
 ```sql
 -- Top 3 drugs with highest volume of reports in the past 12 months
@@ -205,6 +226,7 @@ WITH high_volume_drugs AS (
     record_date >= DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR), YEAR)
     AND medicinal_product IS NOT NULL
     AND fda_last_updated >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR)
+    AND report_origin = 'US'
   GROUP BY 
     medicinal_product
   HAVING 
@@ -227,6 +249,7 @@ WITH high_volume_drugs AS (
   WHERE 
     record_date >= DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR), YEAR)
     AND fda_last_updated >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR)
+    AND report_origin = 'US'
   GROUP BY 
     1, 2
   HAVING
@@ -237,8 +260,8 @@ WITH high_volume_drugs AS (
 -- Create pivot table showing serious event rates by month for easy comparison
 SELECT 
   report_month
-  , IFNULL(actemra, 0) AS actemra
-  , IFNULL(methotrexate, 0) AS methotrexate
+  , IFNULL(dupixent, 0) AS dupixent
+  , IFNULL(`human immunoglobulin g`, 0) AS `human immunoglobulin g`
   , IFNULL(prednisone, 0) AS prednisone
 FROM (
   SELECT 
@@ -249,23 +272,9 @@ FROM (
 )
 PIVOT (
   MAX(serious_rate)
-  FOR medicinal_product IN ('actemra', 'methotrexate', 'prednisone')
+  FOR medicinal_product IN ('dupixent', 'human immunoglobulin g', 'prednisone')
 )
 ```
-
-![Answer 1.3](../images/case1_3.png)
-
-**Key Insights**
-
-- All three drugs show **concerning upward trends** in serious adverse events, particularly in **recent months**.
-- **Methotrexate** demonstrates the **strongest upward trajectory** from **October through January**, peaking at **~84%**.
-
-**Strategic Recommendations**
-
-- **Implement real-time monitoring systems** to detect trend changes within **weeks rather than months**.
-- **Investigate root causes** of increasing trends including **new patient populations**, **dosing changes**, or **drug interactions**.
-- **Develop predictive models** to forecast future adverse event patterns and **proactively manage risks**.
-
 
 ---
 
@@ -273,8 +282,22 @@ PIVOT (
 
 **Business Purpose**: Identify drugs with urgent safety concerns requiring immediate regulatory attention. Expedited reports indicate serious, unexpected adverse events that demand rapid regulatory response.
 
+![Answer 1.4](../images/case1_4.png)
+
+**Key Insights**
+
+- **Dupixent** shows the most dramatic anomaly spike reaching **80%** in January, indicating potential emerging safety concerns.
+- **Human Immunoglobulin G** exhibits moderate volatility with peaks around **40%** in October and **20%** in January.
+- **Prednisone** demonstrates the most stable pattern with generally lower anomaly rates throughout the period.
+
+**Strategic Recommendations**
+
+- **Immediate root cause investigation** for Dupixent's January spike to identify triggering factors and prevent recurrence.
+- **Enhanced anomaly detection systems** to identify unusual patterns within 48-72 hours rather than months.
+- **Drug-specific monitoring thresholds** based on each medication's typical anomaly patterns and volatility.
+
 ```sql
--- Top 3 drugs with high volume of reports in the past 12 months
+-- Top 3 drugs with highest volume of reports in the past 12 months
 WITH
 high_volume_drugs AS (
   SELECT 
@@ -286,6 +309,7 @@ high_volume_drugs AS (
     record_date >= DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR), YEAR)
     AND medicinal_product IS NOT NULL
     AND fda_last_updated >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR)
+    AND report_origin = 'US'
   GROUP BY 
     medicinal_product
   HAVING 
@@ -313,6 +337,7 @@ high_volume_drugs AS (
   WHERE 
     record_date >= DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR), YEAR)
     AND fda_last_updated >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR)
+    AND report_origin = 'US'
   GROUP BY 
     1, 2
   HAVING 
@@ -346,8 +371,8 @@ delta_percent AS (
 -- Create pivot showing month-over-month percentage changes in expedited reporting
 SELECT
   report_month
-  , IFNULL(actemra, 0) AS actemra
-  , IFNULL(methotrexate, 0) AS methotrexate
+  , IFNULL(dupixent, 0) AS dupixent
+  , IFNULL(`human immunoglobulin g`, 0) AS `human immunoglobulin g`
   , IFNULL(prednisone, 0) AS prednisone
 FROM (
   SELECT
@@ -358,24 +383,10 @@ FROM (
 )
 PIVOT (
   MAX(expedited_rate_delta_percent)
-  FOR medicinal_product IN ('actemra', 'methotrexate', 'prednisone')
+  FOR medicinal_product IN ('dupixent', 'human immunoglobulin g', 'prednisone')
 )
 ORDER BY report_month ASC;
 ```
-
-![Answer 1.4](../images/case1_4.png)
-
-**Key Insights**
-
-- September shows a **dramatic spike** with all drugs experiencing **15-22% anomalies** above baseline.
-- **Methotrexate** exhibits the **highest volatility** with extreme swings from **-18% to +22%**.
-- Recent months show **emerging anomalies** indicating potential **new safety concerns**.
-
-**Strategic Recommendations**
-
-- Conduct **immediate root cause analysis** for September spikes to identify triggering factors.
-- Implement **automated early warning systems** to detect similar anomalies within **48-72 hours**.
-- Establish **cross-functional investigation teams** to rapidly respond to expedited report clusters.
 
 ---
 
@@ -383,7 +394,22 @@ ORDER BY report_month ASC;
 
 **Business Purpose**: Understand specific safety concerns to guide targeted risk mitigation strategies, label updates, and healthcare provider communications.
 
+![Answer 1.5](../images/case1_5.png)
+
+**Key Insights**
+
+- **Human Immunoglobulin G** shows the most diverse reaction profile with covid-19 and sinusitis as dominant serious reactions.
+- **Dupixent** demonstrates varied reactions including product use issues, hospitalization, and pneumonia.
+- **Prednisone** exhibits a more concentrated reaction pattern with fewer distinct serious reaction types.
+
+**Strategic Recommendations**
+
+- **Targeted safety communications** addressing specific reaction patterns for each drug to optimize prescriber awareness.
+- **Reaction-specific monitoring protocols** for Human Immunoglobulin G focusing on respiratory complications.
+- **Product use education programs** for Dupixent to address administration-related adverse events.
+
 ```sql
+WITH 
 WITH 
 -- Top 3 drugs with highest volume of reports in the past 12 months
 high_volume_drugs AS (
@@ -396,6 +422,7 @@ high_volume_drugs AS (
     record_date >= DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR), YEAR)
     AND medicinal_product IS NOT NULL
     AND fda_last_updated >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR)
+    AND report_origin = 'US'
   GROUP BY 
     medicinal_product
   HAVING 
@@ -430,6 +457,7 @@ serious_reactions AS (
   WHERE 
     record_date >= DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR), YEAR)
     AND fda_last_updated >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR)
+    AND report_origin = 'US'
     AND patient_reaction IS NOT NULL
     AND (
       serious_type IN ('Death', 'Hospitalization', 'Lifethreatening') 
@@ -471,20 +499,6 @@ FROM ranked_reactions
 WHERE severity_rank <= 5  
 ORDER BY medicinal_product, severity_rank;
 ```
-
-![Answer 1.5](../images/case1_5.png)
-
-**Key Insights**
-
-- Off-label use emerges as a **critical concern** for Methotrexate (**12K+ reports**) and Prednisolone (**11K+ reports**).
-- **Systemic lupus erythematosus** represents a **significant reaction** across multiple drugs.
-- **Actemra** shows a **balanced reaction profile** across **infusion-related** and **systemic conditions**.
-
-**Strategic Recommendations**
-
-- Launch **targeted off-label use investigation** to understand prescribing patterns and associated risks.
-- Develop **specialty-specific safety guidelines** for off-label prescribing with clear contraindications.
-- Implement **prescriber education programs** focusing on **appropriate patient selection** and **monitoring**.
 
 ---
 
