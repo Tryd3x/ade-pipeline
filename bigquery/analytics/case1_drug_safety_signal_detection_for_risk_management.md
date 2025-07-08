@@ -2,7 +2,7 @@
 
 ![Case_1](../images/case1.png)
 
-*Dsiclaimer: *Analysis reflects data up to March 1, 2025, and only covers reports in the US.**
+*Disclaimer: *Analysis reflects data up to March 1, 2025, and only covers reports in the US.**
 
 ## Executive Summary
 
