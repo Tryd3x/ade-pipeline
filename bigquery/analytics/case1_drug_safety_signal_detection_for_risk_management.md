@@ -216,7 +216,8 @@ ORDER BY medicinal_product
 
 ```sql
 -- Top 3 drugs with highest volume of reports in the past 12 months
-WITH high_volume_drugs AS (
+WITH
+high_volume_drugs AS (
   SELECT 
     medicinal_product,
     COUNT(*) as total_reports
@@ -409,7 +410,6 @@ ORDER BY report_month ASC;
 - **Product use education programs** for Dupixent to address administration-related adverse events.
 
 ```sql
-WITH 
 WITH 
 -- Top 3 drugs with highest volume of reports in the past 12 months
 high_volume_drugs AS (
